@@ -12,22 +12,17 @@ export class WebSockerManager {
   }
   handleSocket(ws: WebSocket) {
     ws.on("message", (data) => {
-      const { event } = JSON.parse(data.toString());
-      const { subscribe } = JSON.parse(data.toString());
-
+      const { event, subscribe } = JSON.parse(data.toString());
+      console.log("Event ", { event, subscribe });
       if (this.subscriptionSockets.has(subscribe)) {
         const subscriptionSockets = this.subscriptionSockets.get(subscribe);
         subscriptionSockets?.push(ws);
         this.subscriptionSockets.set(subscribe, subscriptionSockets || []);
       } else {
-        console.log("first to ", subscribe);
         this.subscriptionSockets.set(subscribe, [ws]);
       }
       switch (event) {
         case "SUBSCRIBE":
-          RedisManger.getInstace().subscibeChannel(subscribe);
-          break;
-        case "PUBSUBEVENTS":
           RedisManger.getInstace().PubSubMessages(
             subscribe,
             this.subscriptionSockets.get(subscribe) || []
@@ -36,7 +31,7 @@ export class WebSockerManager {
       }
     });
     ws.on("close", (ws: WebSocket) => {
-      const topic = "BTC";
+      const topic = "BTCUSDT";
       const remainingSockets = this.subscriptionSockets
         .get(topic)
         ?.filter((socket) => socket != ws);

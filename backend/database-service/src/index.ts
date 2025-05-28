@@ -1,10 +1,16 @@
 import express, { NextFunction, Request, Response } from "express";
-import { ApiError } from "@sourabhyalagod/helper";
 const app = express();
 app.use(express.json());
 
-app.use("/api/");
-const port = 3004;
+import authRouter from "./router/userRouter";
+import { MongoManager } from "./database/mongoDB";
+import { RedisManager } from "./utils/RedisManager";
+
+const port = process.env.PORT || 3004;
+MongoManager.getInstance().mongoDb();
+RedisManager.getInstance().listenToQueue();
+
+app.use("/auth", authRouter);
 
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   if (error.message) {

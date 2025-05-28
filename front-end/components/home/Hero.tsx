@@ -1,8 +1,10 @@
 "use client";
 import { Download, Eye, EyeOff, Mic2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 const Hero = ({ showBalance, setShowBalance, balance }: any) => {
+  const router = useRouter();
   return (
     <div className="text-4xl text-text space-y-1 overflow-hidden sm:space-y-4 md:space-y-8 sm:text-6xl lg:text-7xl capitalize font-semibold">
       Discuss Everything Crypto on <br />
@@ -25,11 +27,17 @@ const Hero = ({ showBalance, setShowBalance, balance }: any) => {
         )}
       </div>
       <div className="flex text-[10px] sm:text-xl items-center gap-3 sm:gap-5 md:gap-10">
-        <div className="px-1 w-fit cursor-pointer rounded-sm font-mono flex gap-2 items-center py-2 text-slate-800 font-semibold uppercase bg-yellow-400 hover:scale-105 transition-all">
+        <div
+          onClick={() => router.push(`/deposite`)}
+          className="px-1 w-fit cursor-pointer rounded-sm font-mono flex gap-2 items-center py-2 text-slate-800 font-semibold uppercase bg-yellow-400 hover:scale-105 transition-all"
+        >
           <Download className="size-3 sm:size-6" />
           Deposite
         </div>
-        <button className="bg-[#1e2329] p-2 rounded-lg text-white cursor-pointer hover:scale-105 transition-all">
+        <button
+          onClick={() => router.push(`/trade/BTC`)}
+          className="bg-[#1e2329] p-2 rounded-lg text-white cursor-pointer hover:scale-105 transition-all"
+        >
           Trade
         </button>
         <button className="bg-[#1e2329] p-2 rounded-lg text-white cursor-pointer hover:scale-105 transition-all">

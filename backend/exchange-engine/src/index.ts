@@ -1,17 +1,31 @@
 import express, { NextFunction, Request, Response } from "express";
-import cors from "cors";
 import { config } from "dotenv";
 import redis from "./config/RediManager";
 import { Engine } from "./utils/exchangeEngine";
-import { ApiError } from "@sourabhyalagod/helper";
+import { ApiError, ApiResponse } from "@sourabhyalagod/helper";
 config();
 const app = express();
-
+app.use(express.json());
 redis.on("connect", () => {
   orderQueue();
 });
 redis.on("error", (error: any) => {
   throw new ApiError(501, error.message);
+});
+
+app.post("/", async (req: Request, res: Response) => {
+  const response = await Engine.getInstance().process(req.body);
+  res.json(
+    new ApiResponse(
+      401,
+      response?.message,
+      {
+        orderFilled: response?.filledOrder,
+      },
+      response
+    )
+  );
+  return;
 });
 
 async function orderQueue() {

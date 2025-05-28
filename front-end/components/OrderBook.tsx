@@ -5,8 +5,18 @@ interface Order {
   asset: string;
 }
 const OrderBook = ({ orderBook }: any) => {
-  const sortedAsks = [...orderBook.asks].sort((a, b) => a.price - b.price);
-  const sortedBids = [...orderBook.bids].sort((a, b) => b.price - a.price);
+  if (!orderBook) {
+    return (
+      <div className="w-full relative h-full border flex flex-col justify-center max-w-md mx-auto text-sm font-mono">
+        <div className="absolute top-0 h-10 py-1 inset-x-0">
+          <OrderBookHeader />
+        </div>
+        <div className="divide-y-1 mt-7 max-h-[300px] overflow-scroll"></div>
+      </div>
+    );
+  }
+  const sortedAsks = [...orderBook?.asks].sort((a, b) => a.price - b.price);
+  const sortedBids = [...orderBook?.bids].sort((a, b) => b.price - a.price);
 
   const calculateCumulative = (orders: typeof orderBook.asks) => {
     let total = 0;
@@ -25,7 +35,7 @@ const OrderBook = ({ orderBook }: any) => {
         <OrderBookHeader />
       </div>
       <div className="divide-y-1 mt-7 max-h-[300px] overflow-scroll">
-        {asksWithCumulative.map((ask: any, index: number) => (
+        {asksWithCumulative?.map((ask: any, index: number) => (
           <div
             key={index}
             className={`flex justify-between px-2 py-1 ${

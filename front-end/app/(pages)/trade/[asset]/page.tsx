@@ -3,16 +3,17 @@ import MarketBar from "@/components/bars/MarketBar";
 import Chart from "@/components/Chart";
 import OrderBook from "@/components/OrderBook";
 import OrderForm from "@/components/OrderForm";
-import { orderBook } from "@/lib/orderBook";
+import TradeTab from "@/components/TradeTab";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
 const Trade = () => {
+  const trades = useSelector((state: any) => state?.tradeReducer?.trades);
   const asset = useParams()?.asset;
-  console.log(asset);
-
+  const [orderBook, setOrderBook] = useState();
   const [ticker, setTicker] = useState({
-    asset: "BTCUSDT",
+    asset,
     openPrice: "",
     highPrice: "",
     lowPrice: "",
@@ -24,6 +25,24 @@ const Trade = () => {
         ?.toString()
         .toLowerCase()}@ticker`
     );
+    const socket2 = new WebSocket(process.env.NEXT_PUBLIC_WEBSOCKET_URL!);
+    socket2.onopen = () => {
+      console.log(`Socket Connected to ${asset} PUBSUB`);
+      socket2.send(
+        JSON.stringify({
+          event: "SUBSCRIBE",
+          subscribe: String(asset),
+        })
+      );
+      socket2.onclose = () => {
+        console.log("socket connection closed..!");
+      };
+      socket2.onmessage = (event) => {
+        console.log("OrderBook", JSON.parse(event.data));
+
+        setOrderBook(JSON.parse(event.data));
+      };
+    };
     socket.onopen = () => {
       socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -57,13 +76,21 @@ const Trade = () => {
         </div>
         <div className="grid gap-3 md:flex lg:col-span-5 xl:col-span-4">
           <OrderBook orderBook={orderBook} />
-          <OrderForm marketPrice={ticker?.currentPrice || "0"} />
+          <OrderForm
+            asset={asset as string}
+            marketPrice={Number(ticker?.currentPrice) || 0}
+          />
         </div>
       </div>
 
       {/* Footer - fixed height */}
       <div className="py-2 px-2">
-        <div className="bg-gray-500 w-full h-[150px]"></div>
+        <div className="w-full overflow-scroll h-[150px]">
+          {/* <TradeTab
+            trades={trades}
+            currentPrice={Number(ticker?.currentPrice || "0")}
+          /> */}
+        </div>
       </div>
     </div>
   );

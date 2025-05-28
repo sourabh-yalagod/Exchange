@@ -21,6 +21,8 @@ export class RedisManger {
     if (this.subscriptionSet.has(channel)) return;
     try {
       await this.subscriber?.subscribe(channel);
+      console.log("Subscriebed : ", channel);
+
       this.subscriptionSet.add(channel);
     } catch (error) {
       this.subscriptionSet.delete(channel);
@@ -35,8 +37,9 @@ export class RedisManger {
     if (!this.listenersMap.has(channel)) {
       const handler = (chan: string, message: string) => {
         if (chan === channel) {
-          console.log(`Pub Sub Event : ${message}`);
           sockets?.forEach((socket) => {
+            console.log("Socket Payload");
+
             socket.send(message);
           });
         }
