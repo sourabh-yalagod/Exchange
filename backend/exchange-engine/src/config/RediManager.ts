@@ -27,8 +27,8 @@ export class PubSubClients {
       this.subscriptionSet.delete(channel);
     }
   }
-  public async queue(payload: string) {
-    redis.lpush("database", payload);
+  public async queue(queueName: string, payload: string) {
+    await redis.lpush(queueName.toString(), payload);
   }
   async publishToChannel(channel: string, message: string) {
     try {

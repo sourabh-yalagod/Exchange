@@ -6,6 +6,7 @@ import { RedisManger } from "./config/RedisManager";
 import proxy from "express-http-proxy";
 import { handleAuth, handleRedisQueue } from "./middleware";
 import axios from "axios";
+import { randomUUID } from "crypto";
 config();
 
 const port = process.env.PORT || 3001;
@@ -15,14 +16,14 @@ app.use(express.json());
 app.use(handleAuth);
 
 app.post("/api/order", async (req: any, res) => {
-  const { price, quantity, userId, asset, side, orderId, type } = req.body;
+  const { price, quantity, userId, asset, side, type } = req.body;
   if (!price || !quantity || !asset || !side || !type) {
     throw new ApiError(401, "All fields are required....!");
   }
   console.log("Order reached...!");
-
+  const orderId = randomUUID();
   const order = {
-    userId: req.userId,
+    userId: req.userId || userId,
     price,
     quantity,
     asset,
@@ -36,8 +37,6 @@ app.post("/api/order", async (req: any, res) => {
         `${process.env.EXCHANGE_ENGINE_BASE_URL!}`,
         order
       );
-      console.log(data);
-
       res.json(new ApiResponse(201, data.message, data.filledOrder));
       return;
     } catch (error) {

@@ -2,21 +2,18 @@ import mongoose from "mongoose";
 
 const tradeSchema = new mongoose.Schema(
   {
-    asset: { type: String, required: true },
-    type: { type: String, enum: ["market", "limit"], required: true },
-    price: { type: Number, required: true },
-    quantity: { type: Number, required: true },
-    side: { type: String, enum: ["asks", "bids"], default: "bids" },
+    orderId: String,
+    price: Number,
+    quantity: Number,
+    asset: String,
+    userId: String,
     status: {
       type: String,
-      enum: ["open", "filled", "cancelled"],
-      default: "open",
+      enum: ["pending", "filled", "closed"],
+      default: "pending",
     },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "users",
-      required: true,
-    },
+    side: String,
+    type: String,
   },
   { timestamps: true }
 );

@@ -13,9 +13,9 @@ export class Engine {
     }
     return this.instance;
   }
-  public async handleMarketOrders(order: Order) {
+  public async lookUpOrderBook(order: Order) {
     let filledOrder = 0;
-
+    let tradeMetaData: any = [];
     if (order.side === "bids") {
       const validOrders = this.orderBook.asks
         .filter((o) => o.price <= order.price)
@@ -50,7 +50,16 @@ export class Engine {
         if (index === -1) continue;
 
         const matched = this.orderBook.asks[index];
-
+        tradeMetaData.push({
+          buyerId: order.userId,
+          sellerId: matched.userId,
+          buyerOrderId: order.orderId,
+          side: order.side,
+          sellerOrderId: matched.orderId,
+          price: matched.price,
+          quantity: order.quantity - this.orderBook.asks[index].quantity,
+          asset: order.asset,
+        });
         if (order.quantity <= matched.quantity) {
           matched.quantity -= order.quantity;
           filledOrder += order.quantity;
@@ -58,7 +67,6 @@ export class Engine {
             this.orderBook.asks.splice(index, 1);
           }
           order.quantity = 0;
-          break;
         } else {
           order.quantity -= matched.quantity;
           filledOrder += matched.quantity;
@@ -66,11 +74,13 @@ export class Engine {
         }
       }
       await this.publishToPubSub(order.asset);
+      console.log("TradeMetaData : ", tradeMetaData);
 
       return {
         filledOrder,
         message: "order Filled",
         success: true,
+        tradeMetaData,
       };
     }
 
@@ -108,7 +118,16 @@ export class Engine {
         if (index === -1) continue;
 
         const matched = this.orderBook.bids[index];
-
+        tradeMetaData.push({
+          buyerId: order.userId,
+          sellerId: matched.userId,
+          buyerOrderId: order.orderId,
+          side: order.side,
+          sellerOrderId: matched.orderId,
+          price: matched.price,
+          quantity: order.quantity - this.orderBook.bids[index].quantity,
+          asset: order.asset,
+        });
         if (order.quantity <= matched.quantity) {
           matched.quantity -= order.quantity;
           filledOrder += order.quantity;
@@ -128,6 +147,7 @@ export class Engine {
         filledOrder,
         message: `${filledOrder} quantities filled.`,
         success: true,
+        tradeMetaData,
       };
     }
 
@@ -137,60 +157,67 @@ export class Engine {
       success: false,
     };
   }
-  public async handleLimitOrders(order: Order) {
+  public async handleOrders(order: Order) {
     this.count++;
-    const { success, filledOrder, message } = await this.handleMarketOrders(
-      order
-    );
+    const { success, filledOrder, message, tradeMetaData } =
+      await this.lookUpOrderBook(order);
     if (success) {
+      console.log("tradeMetaData", tradeMetaData);
+
+      if (tradeMetaData) {
+        await PubSubClients.getInstance().publishToChannel(
+          "trades",
+          JSON.stringify(tradeMetaData)
+        );
+        for (const metadata of tradeMetaData)
+          PubSubClients.getInstance().queue("trades", JSON.stringify(metadata));
+      }
       return { success, filledOrder, message };
     }
     if (order.side == "asks") {
-      const isSamePriceOrderExist = this.orderBook.asks.findIndex(
-        (o: Order) => o.price == order.price
-      );
-      if (isSamePriceOrderExist == -1) {
-        this.orderBook.asks.push(order);
-      } else {
-        this.orderBook.asks[isSamePriceOrderExist].quantity += order.quantity;
-      }
+      this.orderBook.asks.push(order);
     }
     if (order.side == "bids") {
-      const isSamePriceOrderExist = this.orderBook.bids.findIndex(
-        (o: Order) => o.price == order.price
-      );
-
-      if (isSamePriceOrderExist == -1) {
-        this.orderBook.bids.push(order);
-      } else {
-        this.orderBook.bids[isSamePriceOrderExist].quantity += order.quantity;
-      }
+      this.orderBook.bids.push(order);
     }
+    await PubSubClients.getInstance().queue("order", JSON.stringify(order));
     await this.publishToPubSub(order.asset);
   }
   public async publishToPubSub(channel: string) {
-    const pubSubMessageAsks = this.orderBook.asks
-      .sort((a: Order, b: Order) => a.price - b.price)
-      .slice(0, 10)
-      .map((order: Order) => {
-        return { price: order.price, quantity: order.quantity };
-      });
-    const pubSubMessagebids = this.orderBook.bids
-      .sort((a: Order, b: Order) => b.price - a.price)
-      .slice(0, 10)
-      .map((order: Order) => {
-        return { price: order.price, quantity: order.quantity };
-      });
+    const pubSubMessageAsks = Object.values(
+      this.orderBook.asks
+        .sort((a: Order, b: Order) => a.price - b.price)
+        .slice(0, 20)
+        .reduce((acc, order) => {
+          if (!acc[order.price]) {
+            acc[order.price] = { price: order.price, quantity: 0 };
+          }
+          acc[order.price].quantity += order.quantity;
+          return acc;
+        }, {} as Record<number, { price: number; quantity: number }>)
+    ).slice(0, 20);
+    const pubSubMessageBids = Object.values(
+      this.orderBook.bids
+        .sort((a: Order, b: Order) => b.price - a.price)
+        .slice(0, 20)
+        .reduce((acc, order) => {
+          if (!acc[order.price]) {
+            acc[order.price] = { price: order.price, quantity: 0 };
+          }
+          acc[order.price].quantity += order.quantity;
+          return acc;
+        }, {} as Record<number, { price: number; quantity: number }>)
+    ).slice(0, 20);
     await PubSubClients.getInstance().publishToChannel(
       channel,
-      JSON.stringify({ asks: pubSubMessageAsks, bids: pubSubMessagebids })
+      JSON.stringify({ asks: pubSubMessageAsks, bids: pubSubMessageBids })
     );
   }
   public async process(order: Order) {
     if (order.type == "market") {
-      return await this.handleMarketOrders(order);
+      return await this.lookUpOrderBook(order);
     } else {
-      return await this.handleLimitOrders(order);
+      return await this.handleOrders(order);
     }
   }
 }
