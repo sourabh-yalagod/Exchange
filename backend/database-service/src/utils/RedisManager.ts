@@ -43,11 +43,11 @@ export class RedisManager {
         }
       }
       if (key == "order" && data) {
+        console.log("Order : ", data);
         try {
-          const response = await recordTrade(JSON.parse(data));
-          console.log(response);
+          await recordTrade(JSON.parse(data));
         } catch (error) {
-          console.log(error);
+          console.error(error);
         }
       }
       if (key == "trades") {
@@ -60,5 +60,11 @@ export class RedisManager {
       }
     }
   }
-  public async backUpQueue(payload: any) {}
+  public async cacheManager(key: string, payload: string) {
+    try {
+      await this.redisClient?.set(key, payload, "EX", 6000);
+    } catch (error) {
+      throw new Error(`Session management failed while caching in redis`);
+    }
+  }
 }

@@ -1,4 +1,4 @@
-import redis, { PubSubClients } from "../config/RediManager";
+import { RedisManager } from "../config/RediManager";
 
 export class Engine {
   private orderBook: OrderBook = { asks: [], bids: [] };
@@ -57,9 +57,17 @@ export class Engine {
           side: order.side,
           sellerOrderId: matched.orderId,
           price: matched.price,
-          quantity: order.quantity - this.orderBook.asks[index].quantity,
+          filled:
+            Number(order.quantity) >=
+            Number(this.orderBook.asks[index].quantity)
+              ? true
+              : false,
           asset: order.asset,
         });
+        console.log(
+          order.quantity,
+          Number(this.orderBook.bids[index].quantity)
+        );
         if (order.quantity <= matched.quantity) {
           matched.quantity -= order.quantity;
           filledOrder += order.quantity;
@@ -119,15 +127,24 @@ export class Engine {
 
         const matched = this.orderBook.bids[index];
         tradeMetaData.push({
-          buyerId: order.userId,
-          sellerId: matched.userId,
+          buyerId: matched.userId,
+          sellerId: order.userId,
           buyerOrderId: order.orderId,
           side: order.side,
           sellerOrderId: matched.orderId,
           price: matched.price,
-          quantity: order.quantity - this.orderBook.bids[index].quantity,
+          filled:
+            Number(order.quantity) >=
+            Number(this.orderBook.bids[index].quantity)
+              ? true
+              : false,
           asset: order.asset,
         });
+        console.log(
+          order.quantity,
+          Number(this.orderBook.bids[index].quantity)
+        );
+
         if (order.quantity <= matched.quantity) {
           matched.quantity -= order.quantity;
           filledOrder += order.quantity;
@@ -159,18 +176,17 @@ export class Engine {
   }
   public async handleOrders(order: Order) {
     this.count++;
+    await RedisManager.getInstance().queue("order", JSON.stringify(order));
     const { success, filledOrder, message, tradeMetaData } =
       await this.lookUpOrderBook(order);
     if (success) {
-      console.log("tradeMetaData", tradeMetaData);
-
       if (tradeMetaData) {
-        await PubSubClients.getInstance().publishToChannel(
+        await RedisManager.getInstance().publishToChannel(
           "trades",
           JSON.stringify(tradeMetaData)
         );
         for (const metadata of tradeMetaData)
-          PubSubClients.getInstance().queue("trades", JSON.stringify(metadata));
+          RedisManager.getInstance().queue("trades", JSON.stringify(metadata));
       }
       return { success, filledOrder, message };
     }
@@ -180,7 +196,7 @@ export class Engine {
     if (order.side == "bids") {
       this.orderBook.bids.push(order);
     }
-    await PubSubClients.getInstance().queue("order", JSON.stringify(order));
+
     await this.publishToPubSub(order.asset);
   }
   public async publishToPubSub(channel: string) {
@@ -208,7 +224,7 @@ export class Engine {
           return acc;
         }, {} as Record<number, { price: number; quantity: number }>)
     ).slice(0, 20);
-    await PubSubClients.getInstance().publishToChannel(
+    await RedisManager.getInstance().publishToChannel(
       channel,
       JSON.stringify({ asks: pubSubMessageAsks, bids: pubSubMessageBids })
     );

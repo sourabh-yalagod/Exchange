@@ -22,4 +22,11 @@ export class RedisManger {
       throw new ApiError("order is pused to Redis Queue " + error, 501);
     }
   }
+  async getCache(key: string) {
+    try {
+      return await this.redisQueue?.get(key);
+    } catch (error) {
+      throw new ApiError("order is pused to Redis Queue " + error, 501);
+    }
+  }
 }

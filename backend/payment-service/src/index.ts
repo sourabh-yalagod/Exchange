@@ -5,7 +5,6 @@ import bodyParser from "body-parser";
 config();
 const app = express();
 app.use(express.json());
-app.use(cors({ origin: "*" }));
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 

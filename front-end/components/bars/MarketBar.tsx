@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import CurrentPrice from "../CurrentPrice";
 
 const MarketBar = ({ ticker }: any) => {
   if (!ticker.openPrice) {
@@ -18,7 +19,11 @@ const MarketBar = ({ ticker }: any) => {
         <MarketBarItem lable={"open Price"} price={ticker.openPrice} />
         <MarketBarItem lable={"close Price"} price={ticker.highPrice} />
         <MarketBarItem lable={"low Price"} price={ticker.lowPrice} />
-        <MarketBarItem lable={"Market Price"} price={ticker.currentPrice} />
+
+        <CurrentPrice
+          label={"Market Price"}
+          currentPrice={ticker.currentPrice}
+        />
       </div>
     </div>
   );

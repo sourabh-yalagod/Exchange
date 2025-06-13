@@ -1,5 +1,5 @@
 "use client";
-import { axiosInstace } from "@/lib/axiosInstance";
+import { axiosInstance } from "@/lib/axiosInstance";
 import { Loader } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -17,13 +17,12 @@ export default function LoginPage() {
   const onSubmit = async (data: any) => {
     try {
       setLoading(true);
-      const { data: response } = await axiosInstace.post(
+      const { data: response } = await axiosInstance.post(
         "/api/user/auth/login",
         data
       );
-      console.log(response);
 
-      router.push(`/login`);
+      router.push(`/`);
     } catch (error) {
       console.log(error);
     } finally {

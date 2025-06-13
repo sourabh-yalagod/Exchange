@@ -2,10 +2,10 @@ import Redis from "ioredis";
 import { ApiError } from "@sourabhyalagod/helper";
 export class RedisManger {
   public static instance: RedisManger;
-  private redisQueue: Redis | null = null;
+  private redisClient: Redis | null = null;
 
   private constructor() {
-    this.redisQueue = new Redis({ port: 6379, host: "localhost" });
+    this.redisClient = new Redis({ port: 6379, host: "localhost" });
   }
 
   public static getInstace() {
@@ -17,7 +17,14 @@ export class RedisManger {
 
   async queue(key: string, value: string) {
     try {
-      await this.redisQueue?.lpush(key, value);
+      await this.redisClient?.lpush(key, value);
+    } catch (error) {
+      throw new ApiError("order is pused to Redis Queue " + error, 501);
+    }
+  }
+  async manageCache(key: string, value: string) {
+    try {
+      await this.redisClient?.set(key, value);
     } catch (error) {
       throw new ApiError("order is pused to Redis Queue " + error, 501);
     }

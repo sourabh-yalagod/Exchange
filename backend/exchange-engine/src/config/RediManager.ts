@@ -1,20 +1,21 @@
 import Redis from "ioredis";
 import { ApiError } from "@sourabhyalagod/helper";
-const redis = new Redis({ host: "localhost", port: 6379 });
+const redis = new Redis();
 export default redis;
-
-export class PubSubClients {
+export class RedisManager {
   private subscriptionSet: Set<string> = new Set();
-  private static instance: PubSubClients;
+  private static instance: RedisManager;
   private publisher: Redis | null = null;
   private subscriber: Redis | null = null;
+  private redisQueue: Redis | null = null;
   private constructor() {
     this.publisher = new Redis({ port: 6379 });
     this.subscriber = new Redis({ port: 6379 });
+    this.redisQueue = new Redis({ port: 6379 });
   }
   public static getInstance() {
     if (!this.instance) {
-      this.instance = new PubSubClients();
+      this.instance = new RedisManager();
     }
     return this.instance;
   }
@@ -28,7 +29,7 @@ export class PubSubClients {
     }
   }
   public async queue(queueName: string, payload: string) {
-    await redis.lpush(queueName.toString(), payload);
+    await this.redisQueue?.lpush(queueName, payload);
   }
   async publishToChannel(channel: string, message: string) {
     try {

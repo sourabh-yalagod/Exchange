@@ -11,18 +11,20 @@ const razerPay = new Razorpay({
 });
 config();
 const stripe = new Stripe(process.env.STRIPE_SECRETE_KEY!);
-
-const userId = "682ee7644e82fb7b55535939";
-const createIntent = asyncHandler(async (req: Request, res: Response) => {
-  console.log("Intent Request....!");
+const createIntent = asyncHandler(async (req: any, res: Response) => {
+  const userId = req.headers["x-user-id"];
+  if (!userId) {
+    throw new ApiError(`please authenticate..!`);
+  }
+  console.log("userId", userId);
 
   try {
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: 1099,
+      amount: req?.body?.amount || 100,
       currency: "usd",
-      description: "Payment for digital service",
+      description: "Deposite to Exchage Account",
       metadata: {
-        userId,
+        userId: req?.userId as string,
       },
       shipping: {
         name: "Jenny Rosen",
@@ -45,7 +47,7 @@ const createIntent = asyncHandler(async (req: Request, res: Response) => {
   } catch (error) {
     try {
       const razorPayIntent = await razerPay.orders.create({
-        amount: 100,
+        amount: req?.body?.amount,
         currency: "INR",
         receipt: `receipt_order_${Date.now()}`,
         payment_capture: true,
@@ -65,6 +67,12 @@ const createIntent = asyncHandler(async (req: Request, res: Response) => {
 
 const depositeRecord = asyncHandler(async (req: Request, res: Response) => {
   const { data, success, error } = zodDepositeRecord.safeParse(req.body);
+  const userId = req.headers["x-user-id"];
+  if (!userId) {
+    throw new ApiError(`please authenticate..!`);
+  }
+  console.log({ data, success, error });
+
   if (!success) {
     throw new ApiError(error.message, 401);
   }
@@ -72,6 +80,10 @@ const depositeRecord = asyncHandler(async (req: Request, res: Response) => {
     await RedisManger.getInstace().queue(
       "database",
       JSON.stringify({ ...data, userId, title: "depositeRecord" })
+    );
+    await RedisManger.getInstace().manageCache(
+      userId as string,
+      JSON.stringify(data.amount)
     );
     res.json(new ApiResponse(201, "Added to Queue", data));
     return;

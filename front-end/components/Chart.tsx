@@ -7,8 +7,10 @@ import {
   ISeriesApi,
   UTCTimestamp,
 } from "lightweight-charts";
+import { useTheme } from "next-themes";
 
 const Chart = ({ asset }: any) => {
+  const { forcedTheme } = useTheme();
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
 
@@ -20,12 +22,12 @@ const Chart = ({ asset }: any) => {
       width: chartContainerRef.current.clientWidth,
       height: chartContainerRef.current.clientHeight,
       layout: {
-        background: { color: "#ffffff" },
-        textColor: "#000",
+        background: { color: forcedTheme == "light" ? "#fffff" : "#181a20" },
+        textColor: forcedTheme == "light" ? "#4A4F52" : "#A0ADB7",
       },
       grid: {
-        vertLines: { color: "#eee" },
-        horzLines: { color: "#eee" },
+        vertLines: { color: forcedTheme == "light" ? "#A6AFB7" : "#2B2E2F" },
+        horzLines: { color: forcedTheme == "light" ? "#A6AFB7" : "#2B2E2F" },
       },
       crosshair: {
         mode: CrosshairMode.Normal,

@@ -4,17 +4,26 @@ import { config } from "dotenv";
 import { ApiError, ApiResponse } from "@sourabhyalagod/helper";
 import { RedisManger } from "./config/RedisManager";
 import proxy from "express-http-proxy";
-import { handleAuth, handleRedisQueue } from "./middleware";
+import { handleAuth } from "./middleware";
 import axios from "axios";
 import { randomUUID } from "crypto";
+import { handleProxy } from "./utils/proxy";
 config();
 
 const port = process.env.PORT || 3001;
 const app = express();
-app.use(cors({ origin: "*" }));
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true, //
+  })
+);
 app.use(express.json());
 app.use(handleAuth);
-
+app.get("/testing", async (req: any, res) => {
+  const payload = await RedisManger.getInstace().getCache(req.userId);
+  res.json(payload);
+});
 app.post("/api/order", async (req: any, res) => {
   const { price, quantity, userId, asset, side, type } = req.body;
   if (!price || !quantity || !asset || !side || !type) {
@@ -63,38 +72,17 @@ app.post("/api/order", async (req: any, res) => {
 
 app.use(
   "/api/database",
-  proxy(process.env.EXCHANGE_DATABASE_BASE_URL as string, {
-    proxyReqOptDecorator(proxyReqOpts: any, srcReq: any) {
-      if (srcReq.userId) {
-        proxyReqOpts.headers["x-user-id"] = srcReq.userId;
-      }
-      if (srcReq.headers.authorization) {
-        proxyReqOpts.headers["authorization"] = srcReq.headers.authorization;
-      }
-
-      return proxyReqOpts;
-    },
-    proxyErrorHandler(err, res, next) {
-      next(new ApiError(err?.message || err, 401));
-    },
-  })
+  handleProxy(process.env.EXCHANGE_DATABASE_BASE_URL as string)
 );
 app.use(
   "/api/user",
-  proxy(process.env.EXCHANGE_DATABASE_BASE_URL as string, {
-    proxyErrorHandler(err, res, next) {
-      throw new ApiError(err, 401);
-    },
-  })
+  handleProxy(process.env.EXCHANGE_DATABASE_BASE_URL as string)
 );
 app.use(
   "/api/payment",
-  proxy(process.env.EXCHANGE_PAYMENT_BASE_URL!, {
-    proxyErrorHandler(err, res, next) {
-      next(new ApiError(err?.message || err, 401));
-    },
-  })
+  handleProxy(process.env.EXCHANGE_PAYMENT_BASE_URL as string)
 );
+
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   if (error.message) {
     res.json({ message: error.message || "Error from Server", sucess: false });
@@ -103,10 +91,12 @@ app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   }
   next();
 });
+
 app.use((req, res, next) => {
   res.json({ message: `${req.url} End point not Exist...!` });
   return;
 });
+
 app.listen(port, () => {
   console.log(`Api Gatway Running on : ${port}`);
 });

@@ -1,4 +1,4 @@
-import { axiosInstace } from "@/lib/axiosInstance";
+import { axiosInstance } from "@/lib/axiosInstance";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { toast } from "sonner";
 
@@ -10,15 +10,12 @@ export const handlePlaceOrder = createAsyncThunk(
   "trade/placeOrder",
   async (payload: any, thunkAPI) => {
     try {
-      const { data } = await axiosInstace.post(
-        "http://localhost:3001/api/order",
-        payload
-      );
+      const { data } = await axiosInstance.post("/api/order", payload);
       console.log("Response : ", data);
       if (data.success) {
-        toast.success(data.message, { position: "top-center", duration: 2500 });
+        toast.success(data.message, { position: "top-left", duration: 2500 });
       } else {
-        toast.error(data.message, { position: "top-left", duration: 2500 });
+        toast.error(data.message, { position: "top-center", duration: 2500 });
       }
       return data;
     } catch (error: any) {

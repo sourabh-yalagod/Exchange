@@ -199,7 +199,7 @@ function NavigationBar() {
           <NavigationMenuTrigger className="bg-transparent sm:text-lg">
             Trade
           </NavigationMenuTrigger>
-          <NavigationMenuContent className="dark:bg-[#1e2329] hover:dark:bg-[#1e2329]">
+          <NavigationMenuContent className="dark:bg-[#1e2329] p-5 hover:dark:bg-[#1e2329]">
             <ul className="grid w-[400px] md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
               {navBarData.trade.map((component) => {
                 return (
@@ -217,7 +217,7 @@ function NavigationBar() {
           <NavigationMenuTrigger className="bg-transparent sm:text-lg">
             Futures
           </NavigationMenuTrigger>
-          <NavigationMenuContent className="dark:bg-[#1e2329] hover:dark:bg-[#1e2329]">
+          <NavigationMenuContent className="dark:bg-[#1e2329] p-5 hover:dark:bg-[#1e2329]">
             <ul className="grid w-[400px] md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
               {navBarData.futures.map((component) => {
                 return (
@@ -235,7 +235,7 @@ function NavigationBar() {
           <NavigationMenuTrigger className="bg-transparent sm:text-lg">
             Earn
           </NavigationMenuTrigger>
-          <NavigationMenuContent className="dark:bg-[#1e2329] hover:dark:bg-[#1e2329]">
+          <NavigationMenuContent className="dark:bg-[#1e2329] p-5 hover:dark:bg-[#1e2329]">
             <ul className="grid w-[400px]  md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
               {navBarData.earn.map((component) => {
                 return (
@@ -253,7 +253,7 @@ function NavigationBar() {
           <NavigationMenuTrigger className="bg-transparent sm:text-lg">
             square
           </NavigationMenuTrigger>
-          <NavigationMenuContent className="dark:bg-[#1e2329] hover:dark:bg-[#1e2329]">
+          <NavigationMenuContent className="dark:bg-[#1e2329] p-5 hover:dark:bg-[#1e2329]">
             <ul className="grid w-[400px]  md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
               {navBarData.square.map((component) => {
                 return (
@@ -271,7 +271,7 @@ function NavigationBar() {
           <NavigationMenuTrigger className="bg-transparent sm:text-lg">
             More
           </NavigationMenuTrigger>
-          <NavigationMenuContent className="dark:bg-[#1e2329] hover:dark:bg-[#1e2329]">
+          <NavigationMenuContent className="dark:bg-[#1e2329] p-5 hover:dark:bg-[#1e2329]">
             <ul className="grid w-[400px]  md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
               {navBarData.more.map((component) => {
                 return (

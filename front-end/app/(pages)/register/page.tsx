@@ -1,5 +1,5 @@
 "use client";
-import { axiosInstace } from "@/lib/axiosInstance";
+import { axiosInstance } from "@/lib/axiosInstance";
 import { Loader } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,12 +18,12 @@ export default function LoginPage() {
   const onSubmit = async (data: any) => {
     try {
       setLoading(true);
-      const { data: response } = await axiosInstace.post(
+      const { data: response } = await axiosInstance.post(
         "/api/user/auth/register",
         data
       );
       if (response.success) {
-        router.push(`/login`);
+        router.push(`/signin`);
       }
     } catch (error) {
       console.log(error);
@@ -33,38 +33,31 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-300 dark:border-gray-700">
-        <div className="flex justify-center">
-          <Image
-            src="/exchange-logo.png"
-            alt="Exchange Logo"
-            height={50}
-            width={50}
-          />
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 px-4">
+      <div className="w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-md space-y-6">
         <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white">
-          Create Your Exchange Account
+          Sign Up
         </h2>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
               Username
             </label>
             <input
               {...register("username", { required: "Username is required" })}
-              className="mt-1 w-full px-4 py-2 border rounded-md bg-gray-100 dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 mt-1 border rounded-md dark:bg-gray-700 dark:text-white"
+              placeholder="Choose a username"
             />
             {errors.username && (
-              <p className="text-red-500 text-xs mt-1">
+              <p className="text-sm text-red-500">
                 {errors.username.message as string}
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
               Email
             </label>
             <input
@@ -72,30 +65,38 @@ export default function LoginPage() {
               {...register("email", {
                 required: "Email is required",
                 pattern: {
-                  value: /\S+@\S+\.\S+/,
+                  value: /^\S+@\S+$/i,
                   message: "Invalid email address",
                 },
               })}
-              className="mt-1 w-full px-4 py-2 border rounded-md bg-gray-100 dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 mt-1 border rounded-md dark:bg-gray-700 dark:text-white"
+              placeholder="Enter your email"
             />
             {errors.email && (
-              <p className="text-red-500 text-xs mt-1">
+              <p className="text-sm text-red-500">
                 {errors.email.message as string}
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
               Password
             </label>
             <input
               type="password"
-              {...register("password", { required: "Password is required" })}
-              className="mt-1 w-full px-4 py-2 border rounded-md bg-gray-100 dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...register("password", {
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters",
+                },
+              })}
+              className="w-full px-4 py-2 mt-1 border rounded-md dark:bg-gray-700 dark:text-white"
+              placeholder="Create a password"
             />
             {errors.password && (
-              <p className="text-red-500 text-xs mt-1">
+              <p className="text-sm text-red-500">
                 {errors.password.message as string}
               </p>
             )}
@@ -103,18 +104,12 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full py-2 mx-auto flex justify-center px-4 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-md hover:from-green-600 hover:to-blue-700 transition font-semibold"
+            disabled={loading}
+            className="w-full py-2 mt-4 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
           >
-            {loading ? <Loader className="animate-spin" /> : "Register"}
+            {loading ? "Creating account..." : "Sign Up"}
           </button>
         </form>
-
-        <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-          Already have an account?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline">
-            Login
-          </Link>
-        </p>
       </div>
     </div>
   );

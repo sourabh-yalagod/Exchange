@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Elements,
   CardElement,
@@ -7,9 +7,10 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { ArrowRight, Banknote, IndianRupee, MonitorCheck } from "lucide-react";
-import { axiosInstace } from "@/lib/axiosInstance";
 
 import { loadRazorpay } from "@/lib/razorPayLoader";
+import { toast } from "sonner";
+import { axiosInstance } from "@/lib/axiosInstance";
 
 const CheckoutForm = () => {
   const userId = "1";
@@ -25,17 +26,24 @@ const CheckoutForm = () => {
     event.preventDefault();
     setLoading(true);
 
-    const { data } = await axiosInstace.post(`/api/payment/create-intent`, {
+    const { data } = await axiosInstance.post(`/api/payment/create-intent`, {
       amount,
       currency: "INR",
     });
-    console.log("INTENT : ", data.data);
-
-    setClientSecret(data.data.client_secrete);
+    console.log("INTENT : ", data);
+    if (!data.data) {
+      toast.error(data.message || "Something went wrong!", {
+        position: "top-center",
+        duration: 2500,
+      });
+      setLoading(false);
+      return;
+    }
+    setClientSecret(data?.data?.client_secrete);
 
     if (loading) return;
 
-    if (data.data.provider == "razorpay") {
+    if (data?.data?.provider == "razorpay") {
       await loadRazorpay();
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
@@ -45,7 +53,7 @@ const CheckoutForm = () => {
         description: "Test Transaction",
         order_id: data?.data?.orderId,
         handler: async function (response: any) {
-          await axiosInstace.post(`/api/payment/record`, {
+          await axiosInstance.post(`/api/payment/record`, {
             amount,
             method: "razorpay",
             status: "completed",
@@ -64,7 +72,7 @@ const CheckoutForm = () => {
 
       const rzp = new (window as any).Razorpay(options);
       rzp.on("payment.failed", function (response: any) {
-        alert("Payment Failed");
+        toast.error("Payment Failed");
         console.log("Failed:", response);
 
         setLoading(false);
@@ -84,11 +92,11 @@ const CheckoutForm = () => {
           }
         );
         if (result.error) {
-          setMessage(`Payment failed: ${result.error.message}`);
+          toast.error(`Payment failed: ${result.error.message}`);
         } else {
           if (result.paymentIntent?.status === "succeeded") {
-            setMessage("Payment succeeded!");
-            const { data } = await axiosInstace.post(`/api/payment/record`, {
+            toast.success("Payment succeeded!");
+            const { data } = await axiosInstance.post(`/api/payment/record`, {
               amount,
               method: "stripe",
               status: "completed",
@@ -97,7 +105,7 @@ const CheckoutForm = () => {
           }
         }
       } catch (error: any) {
-        setMessage(error);
+        toast.error(error.message || "Something went wrong");
       } finally {
         setLoading(false);
       }
