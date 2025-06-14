@@ -18,6 +18,7 @@ export const recordTrade = async (payload: any) => {
 export const handleTransaction = async (payload: any) => {
   const buyer = await Trade.findOne({ orderId: payload.buyerOrderId });
   const seller = await Trade.findOne({ orderId: payload.sellerOrderId });
+  console.log("Payload : ", payload);
 
   if (!seller) {
     console.log("no seller");

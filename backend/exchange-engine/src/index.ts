@@ -14,16 +14,13 @@ redis.on("error", (error: any) => {
 });
 
 app.post("/", async (req: Request, res: Response) => {
-  const response = await Engine.getInstance().process(req.body);
+  const response: any = await Engine.getInstance().process(req.body);
+  console.log(response);
+
   res.json(
-    new ApiResponse(
-      401,
-      response?.message,
-      {
-        orderFilled: response?.filledOrder,
-      },
-      response
-    )
+    new ApiResponse(response.success ? 201 : 401, response?.message, {
+      orderFilled: response?.filledOrder,
+    })
   );
   return;
 });

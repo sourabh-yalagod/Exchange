@@ -4,10 +4,10 @@ import { config } from "dotenv";
 import { ApiError, ApiResponse } from "@sourabhyalagod/helper";
 import { RedisManger } from "./config/RedisManager";
 import proxy from "express-http-proxy";
-import { handleAuth } from "./middleware";
 import axios from "axios";
 import { randomUUID } from "crypto";
 import { handleProxy } from "./utils/proxy";
+import { handleAuth } from "./middleware";
 config();
 
 const port = process.env.PORT || 3001;
@@ -19,17 +19,15 @@ app.use(
   })
 );
 app.use(express.json());
-app.use(handleAuth);
 app.get("/testing", async (req: any, res) => {
   const payload = await RedisManger.getInstace().getCache(req.userId);
   res.json(payload);
 });
-app.post("/api/order", async (req: any, res) => {
+app.post("/api/order", handleAuth, async (req: any, res) => {
   const { price, quantity, userId, asset, side, type } = req.body;
   if (!price || !quantity || !asset || !side || !type) {
     throw new ApiError(401, "All fields are required....!");
   }
-  console.log("Order reached...!");
   const orderId = randomUUID();
   const order = {
     userId: req.userId || userId,
@@ -46,10 +44,16 @@ app.post("/api/order", async (req: any, res) => {
         `${process.env.EXCHANGE_ENGINE_BASE_URL!}`,
         order
       );
-      res.json(new ApiResponse(201, data.message, data.filledOrder));
+      console.log("Market order response : ", data);
+
+      if (data.success) {
+        res.json(new ApiResponse(201, data.message, data.filledOrder));
+      } else {
+        throw new ApiError(data.message, 4, 1);
+      }
       return;
-    } catch (error) {
-      throw new ApiError("order placed gone wrong" + error, 501);
+    } catch (error: any) {
+      throw new ApiError(error?.message || "order placed gone wrong", 501);
     }
   } else {
     try {
@@ -72,6 +76,7 @@ app.post("/api/order", async (req: any, res) => {
 
 app.use(
   "/api/database",
+  handleAuth,
   handleProxy(process.env.EXCHANGE_DATABASE_BASE_URL as string)
 );
 app.use(
@@ -80,6 +85,7 @@ app.use(
 );
 app.use(
   "/api/payment",
+  handleAuth,
   handleProxy(process.env.EXCHANGE_PAYMENT_BASE_URL as string)
 );
 
@@ -89,7 +95,6 @@ app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   } else {
     res.json({ message: "Error from Server", sucess: false });
   }
-  next();
 });
 
 app.use((req, res, next) => {

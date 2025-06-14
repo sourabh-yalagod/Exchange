@@ -86,10 +86,9 @@ const Trade = () => {
       {/* Footer - fixed height */}
       <div className="py-2 px-2">
         <div className="w-full overflow-scroll h-[150px]">
-          {/* <TradeTab
-            trades={trades}
+          <TradeTab
             currentPrice={Number(ticker?.currentPrice || "0")}
-          /> */}
+          />
         </div>
       </div>
     </div>

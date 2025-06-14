@@ -33,6 +33,7 @@ const login = asyncHandler(async (req: Request, res: Response) => {
   if (!success) {
     throw new ApiError(error.message, 401);
   }
+  console.log({ success, data, error });
 
   const checkUser = await User.findOne({
     $or: [{ username: data.username }],
@@ -60,6 +61,7 @@ const login = asyncHandler(async (req: Request, res: Response) => {
       email: checkUser.email,
     })
   );
+  console.log(token);
 
   res
     .status(202)

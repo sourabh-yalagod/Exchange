@@ -7,6 +7,8 @@ const tradeSchema = new mongoose.Schema(
     quantity: Number,
     asset: String,
     userId: String,
+    sl: Number,
+    target: Number,
     status: {
       type: String,
       enum: ["pending", "filled", "closed"],

@@ -28,11 +28,13 @@ export class Engine {
       if (availableQuantity === 0) {
         return {
           filledOrder,
-          message: `No matching asks available below the $${order.price}`,
+          message: `No sellers available Below The Price $${order.price}`,
           success: false,
         };
       }
       if (availableQuantity < order.quantity) {
+        console.log("DEBUG - 1", order.quantity);
+
         return {
           message: `only ${availableQuantity} quantity can be full filled as of now`,
           success: false,
@@ -83,7 +85,7 @@ export class Engine {
       }
       await this.publishToPubSub(order.asset);
       console.log("TradeMetaData : ", tradeMetaData);
-
+      console.log("DEBUG - 2", order.quantity);
       return {
         filledOrder,
         message: "order Filled",

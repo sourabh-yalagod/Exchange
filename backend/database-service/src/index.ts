@@ -3,6 +3,7 @@ const app = express();
 app.use(express.json());
 
 import authRouter from "./router/userRouter";
+import userTrades from "./router/tradeRouter";
 import { MongoManager } from "./database/mongoDB";
 import { RedisManager } from "./utils/RedisManager";
 
@@ -11,7 +12,7 @@ MongoManager.getInstance().mongoDb();
 RedisManager.getInstance().listenToQueue();
 
 app.use("/auth", authRouter);
-
+app.use("/order", userTrades);
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   if (error.message) {
     res.json({ message: error.message, success: false });
