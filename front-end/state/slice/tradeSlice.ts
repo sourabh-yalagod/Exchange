@@ -46,6 +46,28 @@ export const handlePlaceOrder = createAsyncThunk<
     return thunkAPI.rejectWithValue(error.response.data);
   }
 });
+export const handleCloseTrade = createAsyncThunk<
+  any,
+  any,
+  { extra: { queryClient: QueryClient } }
+>("trade/close", async (payload: any, thunkAPI) => {
+  try {
+    const { queryClient } = thunkAPI.extra;
+    const { data } = await axiosInstance.post(
+      `/api/database/order/close/${payload.orderId}`,
+      payload
+    );
+    console.log("close order", data);
+
+    await queryClient.invalidateQueries({ queryKey: ["orders"] });
+    toast(data?.message, { duration: 2000 });
+    return data;
+  } catch (error) {
+    toast.error(`Order closing failed...!`, {
+      description: "Please try it again",
+    });
+  }
+});
 export const tradeReducer = createSlice({
   name: "trade",
   initialState,
@@ -62,6 +84,9 @@ export const tradeReducer = createSlice({
       if (action.payload.success) {
         state.trades.push(action.payload);
       }
+    });
+    builder.addCase(handleCloseTrade.fulfilled, (state: any, action) => {
+      console.log(action.payload);
     });
   },
 });

@@ -6,7 +6,7 @@ import React from "react";
 const Hero = ({ showBalance, setShowBalance, balance }: any) => {
   const router = useRouter();
   return (
-    <div className="text-4xl text-text space-y-1 overflow-hidden sm:space-y-4 md:space-y-8 sm:text-6xl lg:text-7xl capitalize font-semibold">
+    <div className="text-4xl text-text space-y-1 overflow-hidden sm:space-y-4 md:space-y-8 sm:text-6xl md:text-5xl lg:pl-10 xl:text-7xl capitalize font-semibold">
       Discuss Everything Crypto on <br />
       <span className="text-yellow-400 uppercase underline underline-offset-8">
         Binance Square

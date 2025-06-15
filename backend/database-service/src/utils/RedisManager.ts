@@ -9,7 +9,11 @@ import {
 export class RedisManager {
   private static instance: RedisManager | null = null;
   private redisClient: Redis | null = null;
-  private constructor() {}
+  private cacheClient: Redis | null = null;
+  private constructor() {
+    this.cacheClient = new Redis();
+    this.redisClient = new Redis();
+  }
   public static getInstance() {
     if (!this.instance) {
       this.instance = new RedisManager();
@@ -25,6 +29,8 @@ export class RedisManager {
         ["database", "trades", "order"],
         0
       );
+      console.log(data);
+
       if (key == "database") {
         const value = JSON.parse(data);
         switch (value?.title) {
@@ -61,8 +67,11 @@ export class RedisManager {
     }
   }
   public async cacheManager(key: string, payload: string) {
+    if (!this.cacheClient) {
+      this.cacheClient = new Redis();
+    }
     try {
-      await this.redisClient?.set(key, payload, "EX", 6000);
+      return await this.cacheClient?.set(key, payload);
     } catch (error) {
       throw new Error(`Session management failed while caching in redis`);
     }

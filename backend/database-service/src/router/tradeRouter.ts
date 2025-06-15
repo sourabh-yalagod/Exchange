@@ -1,8 +1,13 @@
 import { Router } from "express";
 import { login, register } from "../controller/auth";
-import { closeOrder, fetchOrders } from "../controller/order";
+import {
+  closeOrder,
+  fetchClosedOrders,
+  fetchOpenOrders,
+} from "../controller/order";
 const router = Router();
 
-router.get(`/`, fetchOrders);
-router.patch(`/:orderId`, closeOrder);
+router.get(`/`, fetchOpenOrders);
+router.get(`/closed`, fetchClosedOrders);
+router.post(`/close/:orderId`, closeOrder);
 export default router;

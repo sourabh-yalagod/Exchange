@@ -24,7 +24,6 @@ export const handleAuth = (req: any, res: Response, next: NextFunction) => {
     const payload = jwt.verify(token, JWT_SECRET) as { userId: string };
 
     if (!payload?.userId) throw new ApiError("Invalid token", 401);
-    console.log("payload : ", payload);
 
     req.userId = payload.userId;
     next();

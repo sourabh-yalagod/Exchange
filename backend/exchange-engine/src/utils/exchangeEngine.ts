@@ -178,6 +178,7 @@ export class Engine {
   }
   public async handleOrders(order: Order) {
     this.count++;
+
     await RedisManager.getInstance().queue("order", JSON.stringify(order));
     const { success, filledOrder, message, tradeMetaData } =
       await this.lookUpOrderBook(order);
@@ -232,6 +233,7 @@ export class Engine {
     );
   }
   public async process(order: Order) {
+    console.log("Processing : ", order);
     if (order.type == "market") {
       return await this.lookUpOrderBook(order);
     } else {

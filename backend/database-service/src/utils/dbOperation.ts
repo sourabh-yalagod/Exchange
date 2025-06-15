@@ -3,10 +3,13 @@ import { Trade } from "../model/trade";
 import { User } from "../model/user";
 
 export const recordDepositeRecord = async (payload: any) => {
+  console.log("Payload : ", payload);
+
   const user = await User.findById(payload.userId);
   const depositeHistory: any[] = user?.depositHistory;
   depositeHistory.push({ ...payload, createdAt: new Date() });
   user.depositHistory = depositeHistory;
+  user.balance += Number(payload?.amount);
   await user.save();
   console.log("User : ", user);
 };

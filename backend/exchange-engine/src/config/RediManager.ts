@@ -29,7 +29,10 @@ export class RedisManager {
     }
   }
   public async queue(queueName: string, payload: string) {
+    console.log("before");
+
     await this.redisQueue?.lpush(queueName, payload);
+    console.log("after");
   }
   async publishToChannel(channel: string, message: string) {
     try {

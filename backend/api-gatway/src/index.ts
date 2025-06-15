@@ -3,7 +3,6 @@ import cors from "cors";
 import { config } from "dotenv";
 import { ApiError, ApiResponse } from "@sourabhyalagod/helper";
 import { RedisManger } from "./config/RedisManager";
-import proxy from "express-http-proxy";
 import axios from "axios";
 import { randomUUID } from "crypto";
 import { handleProxy } from "./utils/proxy";
@@ -38,14 +37,16 @@ app.post("/api/order", handleAuth, async (req: any, res) => {
     orderId,
     type,
   };
+  const userMetaData = await RedisManger.getInstace().getCache(req.userId);
+  console.log("userMetaData : ", userMetaData);
+  res.send(userMetaData);
+  return;
   if (type == "market") {
     try {
       const { data } = await axios.post(
         `${process.env.EXCHANGE_ENGINE_BASE_URL!}`,
         order
       );
-      console.log("Market order response : ", data);
-
       if (data.success) {
         res.json(new ApiResponse(201, data.message, data.filledOrder));
       } else {
@@ -56,6 +57,8 @@ app.post("/api/order", handleAuth, async (req: any, res) => {
       throw new ApiError(error?.message || "order placed gone wrong", 501);
     }
   } else {
+    console.log("limit order");
+
     try {
       await RedisManger.getInstace().queue(
         `order-queue`,

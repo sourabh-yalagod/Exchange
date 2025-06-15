@@ -14,6 +14,7 @@ const tradeSchema = new mongoose.Schema(
       enum: ["pending", "filled", "closed"],
       default: "pending",
     },
+    pl: Number,
     side: String,
     type: String,
   },

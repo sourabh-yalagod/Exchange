@@ -29,48 +29,54 @@ const register = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const login = asyncHandler(async (req: Request, res: Response) => {
-  const { success, data, error } = zodLoginSchema.safeParse(req.body);
-  if (!success) {
-    throw new ApiError(error.message, 401);
-  }
-  console.log({ success, data, error });
-
-  const checkUser = await User.findOne({
-    $or: [{ username: data.username }],
-  });
-  if (!checkUser) {
-    throw new ApiError(`user not exist please register`, 401);
-  }
-  const isPasswordValid = await verifyPassword(
-    checkUser.password,
-    data.password
-  );
-  if (!isPasswordValid) {
-    throw new ApiError(`Password is invalid....!`, 401);
-  }
-  const token = generateToken({
-    userId: checkUser.id || checkUser._id,
-    username: checkUser.username,
-  });
-  RedisManager.getInstance().cacheManager(
-    checkUser._id,
-    JSON.stringify({
-      balace: checkUser.balance,
-      locked: checkUser?.locked || 0,
+  try {
+    const { success, data, error } = zodLoginSchema.safeParse(req.body);
+    if (!success) {
+      throw new ApiError(error.message, 401);
+    }
+    const checkUser = await User.findOne({
+      $or: [{ username: data.username }],
+    });
+    if (!checkUser) {
+      throw new ApiError(`user not exist please register`, 401);
+    }
+    const isPasswordValid = await verifyPassword(
+      checkUser.password,
+      data.password
+    );
+    if (!isPasswordValid) {
+      throw new ApiError(`Password is invalid....!`, 401);
+    }
+    const token = generateToken({
+      userId: checkUser.id || checkUser._id,
       username: checkUser.username,
-      email: checkUser.email,
-    })
-  );
-  console.log(token);
+    });
 
-  res
-    .status(202)
-    .cookie("token", token, {
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24,
-    })
-    .json(new ApiResponse(202, "user logged successfully.", { token }));
-  return;
+    const s = await RedisManager.getInstance().cacheManager(
+      checkUser._id?.toString(),
+      JSON.stringify({
+        balance: checkUser?.balance,
+        locked: checkUser?.locked || 0,
+        username: checkUser.username,
+        email: checkUser.email,
+      })
+    );
+
+    console.log("S : ", s);
+
+    res
+      .status(202)
+      .cookie("token", token, {
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24,
+      })
+      .json(new ApiResponse(202, "user logged successfully.", { token }));
+    return;
+  } catch (error: any) {
+    console.log(error.message);
+
+    throw new ApiError(error.message || "Something went wrong", 501);
+  }
 });
 
 export { register, login };

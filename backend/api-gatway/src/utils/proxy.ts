@@ -7,8 +7,6 @@ export const handleProxy = (url: string) => {
   return proxy(url, {
     proxyReqOptDecorator(proxyReqOpts: any, srcReq: any) {
       if (srcReq.userId) {
-        console.log(srcReq.userId);
-
         proxyReqOpts.headers["x-user-id"] = srcReq.userId;
       }
       if (srcReq.headers.authorization) {

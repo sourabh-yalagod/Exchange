@@ -1,6 +1,7 @@
 "use client";
 import { axiosInstance } from "@/lib/axiosInstance";
-import { closeTrade } from "@/state/slice/tradeSlice";
+import { handleCloseTrade } from "@/state/slice/tradeSlice";
+import { useAppDispatch } from "@/state/store";
 import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import React from "react";
@@ -17,10 +18,8 @@ type Trade = {
 };
 
 const TradeTab = ({ currentPrice }: any) => {
-  const dispatch = useDispatch();
-  const handleCloseTrade = (tradeId: string) => {
-    dispatch(closeTrade({ tradeId }));
-  };
+  const dispatch = useAppDispatch();
+
   const fetchTrades = async () => {
     const { data } = await axiosInstance.get("/api/database/order");
     return data;
@@ -29,8 +28,11 @@ const TradeTab = ({ currentPrice }: any) => {
     queryKey: ["orders"],
     queryFn: fetchTrades,
   });
-  console.log({ data, isLoading, error });
+  const closeOrder = async (closeOrderData: any) => {
+    console.log("Payload 2: ", closeOrderData);
 
+    await dispatch(handleCloseTrade(closeOrderData));
+  };
   return (
     <div className="w-full mx-auto p-4">
       <div className="grid  place-items-center grid-cols-2 sm:grid-cols-3 md:grid-cols-5 xl:grid-cols-7 font-semibold text-sm sm:text-base border-b border-gray-300 dark:border-gray-600 pb-2 mb-2 text-gray-700 dark:text-gray-300">
@@ -57,7 +59,6 @@ const TradeTab = ({ currentPrice }: any) => {
               key={index}
               className="grid place-items-center relative grid-cols-2 sm:grid-cols-3 md:grid-cols-5 xl:grid-cols-7 items-center text-sm sm:text-base p-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             >
-              {/* SIDE and TYPE */}
               <div className="flex items-center gap-2">
                 <span
                   className={`px-2 py-1rounded-full text-white text-xs sm:text-sm font-medium ${
@@ -71,17 +72,10 @@ const TradeTab = ({ currentPrice }: any) => {
                 </div>
               </div>
 
-              {/* Open Price */}
               <div>${trade.price}</div>
-
-              {/* Current Price */}
               <div>${Number(currentPrice).toFixed(2)}</div>
-
-              {/* SL & Target */}
               <div>{trade.sl ?? "-"}</div>
               <div>{trade.target ?? "-"}</div>
-
-              {/* Status Column */}
               <div>
                 {isLimit && trade.status === "pending" ? (
                   <div className="text-gray-400">
@@ -99,7 +93,14 @@ const TradeTab = ({ currentPrice }: any) => {
                   </>
                 )}
               </div>
-              <div>
+              <div
+                onClick={() =>
+                  closeOrder({
+                    orderId: trade.id || trade._id,
+                    pl: priceDiff,
+                  })
+                }
+              >
                 {trade.status == "pending" ? (
                   <div className="flex gap-2 bg-gray-700 p-1 rounded-md hover:scale-95 transition-all cursor-pointer items-center text-xs font-semibold">
                     Close
@@ -108,7 +109,7 @@ const TradeTab = ({ currentPrice }: any) => {
                 ) : (
                   <div className="flex gap-2 bg-gray-700 p-1 rounded-md hover:scale-95 transition-all cursor-pointer items-center text-xs font-semibold">
                     book
-                    <X />
+                    <X size={10} />
                   </div>
                 )}
               </div>

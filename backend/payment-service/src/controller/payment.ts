@@ -11,6 +11,7 @@ const razerPay = new Razorpay({
 });
 config();
 const stripe = new Stripe(process.env.STRIPE_SECRETE_KEY!);
+
 const createIntent = asyncHandler(async (req: any, res: Response) => {
   const userId = req.headers["x-user-id"];
   if (!userId) {
@@ -80,10 +81,6 @@ const depositeRecord = asyncHandler(async (req: Request, res: Response) => {
     await RedisManger.getInstace().queue(
       "database",
       JSON.stringify({ ...data, userId, title: "depositeRecord" })
-    );
-    await RedisManger.getInstace().manageCache(
-      userId as string,
-      JSON.stringify(data.amount)
     );
     res.json(new ApiResponse(201, "Added to Queue", data));
     return;

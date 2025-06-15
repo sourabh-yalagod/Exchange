@@ -37,7 +37,7 @@ const HomePage = () => {
   return (
     <div className="dark:dark-bg min-h-screen">
       <Header />
-      <div className="pt-10 w-full space-y-5 px-3 lg:px-28">
+      <div className="pt-10 w-full space-y-5 px-3 lg:px-12 xl:px-20">
         <div className="md:flex space-y-10 justify-between grid place-items-center w-full">
           <Hero
             balance={balance}

@@ -201,9 +201,10 @@ function NavigationBar() {
           </NavigationMenuTrigger>
           <NavigationMenuContent className="dark:bg-[#1e2329] p-5 hover:dark:bg-[#1e2329]">
             <ul className="grid w-[400px] md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-              {navBarData.trade.map((component) => {
+              {navBarData.trade.map((component, index) => {
                 return (
                   <NavItems
+                    key={index}
                     icon={component.icon}
                     title={component.title}
                     description={component.description}
@@ -219,9 +220,10 @@ function NavigationBar() {
           </NavigationMenuTrigger>
           <NavigationMenuContent className="dark:bg-[#1e2329] p-5 hover:dark:bg-[#1e2329]">
             <ul className="grid w-[400px] md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-              {navBarData.futures.map((component) => {
+              {navBarData.futures.map((component, index) => {
                 return (
                   <NavItems
+                    key={index}
                     icon={component.icon}
                     title={component.title}
                     description={component.description}
@@ -237,9 +239,10 @@ function NavigationBar() {
           </NavigationMenuTrigger>
           <NavigationMenuContent className="dark:bg-[#1e2329] p-5 hover:dark:bg-[#1e2329]">
             <ul className="grid w-[400px]  md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-              {navBarData.earn.map((component) => {
+              {navBarData.earn.map((component, index) => {
                 return (
                   <NavItems
+                    key={index}
                     icon={component.icon}
                     title={component.title}
                     description={component.description}
@@ -255,9 +258,10 @@ function NavigationBar() {
           </NavigationMenuTrigger>
           <NavigationMenuContent className="dark:bg-[#1e2329] p-5 hover:dark:bg-[#1e2329]">
             <ul className="grid w-[400px]  md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-              {navBarData.square.map((component) => {
+              {navBarData.square.map((component, index) => {
                 return (
                   <NavItems
+                    key={index}
                     icon={component.icon}
                     title={component.title}
                     description={component.description}
@@ -273,9 +277,10 @@ function NavigationBar() {
           </NavigationMenuTrigger>
           <NavigationMenuContent className="dark:bg-[#1e2329] p-5 hover:dark:bg-[#1e2329]">
             <ul className="grid w-[400px]  md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-              {navBarData.more.map((component) => {
+              {navBarData.more.map((component, index) => {
                 return (
                   <NavItems
+                    key={index}
                     icon={component.icon}
                     title={component.title}
                     description={component.description}
