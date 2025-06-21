@@ -19,9 +19,9 @@ export default function LoginPage() {
       setLoading(true);
       const { data: response } = await axiosInstance.post(
         "/api/user/auth/login",
-        data
+        data,
       );
-
+      localStorage.setItem("token", response?.data?.token);
       router.push(`/`);
     } catch (error) {
       console.log(error);

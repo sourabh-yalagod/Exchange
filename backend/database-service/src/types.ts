@@ -18,7 +18,7 @@ export const zodUserSchema = z.object({
         method: z.string(),
         status: z.enum(["pending", "completed", "failed"]).default("pending"),
         createdAt: z.date().optional(),
-      })
+      }),
     )
     .optional(),
 
@@ -30,7 +30,7 @@ export const zodUserSchema = z.object({
         address: z.string(),
         status: z.enum(["pending", "approved", "rejected"]).default("pending"),
         createdAt: z.date().optional(),
-      })
+      }),
     )
     .optional(),
 });

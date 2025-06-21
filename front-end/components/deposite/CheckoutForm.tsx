@@ -89,7 +89,7 @@ const CheckoutForm = () => {
               card: elements.getElement(CardElement)!,
               metadata: { userId },
             },
-          }
+          },
         );
         if (result.error) {
           toast.error(`Payment failed: ${result.error.message}`);
@@ -141,7 +141,7 @@ const CheckoutForm = () => {
                 value={amount}
                 onChange={(e: any) =>
                   setAmount(
-                    e.target.value === "" ? "" : parseInt(e.target.value)
+                    e.target.value === "" ? "" : parseInt(e.target.value),
                   )
                 }
                 className="bg-transparent outline-none w-full text-white placeholder-gray-500"

@@ -21,7 +21,7 @@ const Demo = () => {
           {["Desktop", "Lite", "Pro"].map((item) => {
             console.log(
               // item.toLowerCase().startsWith(image.toLowerCase().split("/")[0])
-              image.slice(1)
+              image.slice(1),
             );
 
             return (
@@ -33,7 +33,7 @@ const Demo = () => {
                       item
                         .toLowerCase()
                         .concat(forcedTheme == "dark" ? "Dark" : "Light")
-                    ]
+                    ],
                   )
                 }
                 className="relative group transition-all hover:scale-105"

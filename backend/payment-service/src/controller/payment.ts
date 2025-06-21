@@ -42,7 +42,7 @@ const createIntent = asyncHandler(async (req: any, res: Response) => {
       new ApiResponse(205, "stripe created payment intent", {
         provider: "stripe",
         client_secrete: paymentIntent.client_secret,
-      })
+      }),
     );
     return;
   } catch (error) {
@@ -57,7 +57,7 @@ const createIntent = asyncHandler(async (req: any, res: Response) => {
         new ApiResponse(205, "razorpay payment intent", {
           provider: "razorpay",
           orderId: razorPayIntent.id,
-        })
+        }),
       );
       return;
     } catch (error) {
@@ -80,8 +80,12 @@ const depositeRecord = asyncHandler(async (req: Request, res: Response) => {
   try {
     await RedisManger.getInstace().queue(
       "database",
-      JSON.stringify({ ...data, userId, title: "depositeRecord" })
+      JSON.stringify({ ...data, userId, title: "depositeRecord" }),
     );
+    const userDataRaw = await RedisManger.getInstace().getCache(userId as string)
+    let userData = JSON.parse(userDataRaw as string ?? '{}')
+    userData.balance=Number(userData.balance)+Number(data.amount)
+    await RedisManger.getInstace().setCache(userId as string,JSON.stringify(userData))
     res.json(new ApiResponse(201, "Added to Queue", data));
     return;
   } catch (error: any) {

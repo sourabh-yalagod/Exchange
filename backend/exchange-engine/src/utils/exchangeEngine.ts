@@ -1,4 +1,5 @@
 import { RedisManager } from "../config/RediManager";
+import { throttle } from "./throtle";
 
 export class Engine {
   private orderBook: OrderBook = { asks: [], bids: [] };
@@ -6,7 +7,7 @@ export class Engine {
   public static instance: Engine | null = null;
   private count = 0;
   private constructor() {}
-
+  
   public static getInstance() {
     if (!this.instance) {
       this.instance = new Engine();
@@ -14,6 +15,10 @@ export class Engine {
     return this.instance;
   }
   public async lookUpOrderBook(order: Order) {
+      const throttledSave = throttle(() => {
+      RedisManager.getInstance().queue("orderBook", JSON.stringify(this.orderBook));
+    }, 3000);
+    throttledSave()
     let filledOrder = 0;
     let tradeMetaData: any = [];
     if (order.side === "bids") {
@@ -23,7 +28,7 @@ export class Engine {
 
       const availableQuantity = validOrders.reduce(
         (acc, curr) => acc + curr.quantity,
-        0
+        0,
       );
       if (availableQuantity === 0) {
         return {
@@ -46,7 +51,7 @@ export class Engine {
         if (order.quantity === 0) break;
 
         const index = this.orderBook.asks.findIndex(
-          (ask) => ask.price === o.price && ask.quantity === o.quantity
+          (ask) => ask.price === o.price && ask.quantity === o.quantity,
         );
 
         if (index === -1) continue;
@@ -68,7 +73,7 @@ export class Engine {
         });
         console.log(
           order.quantity,
-          Number(this.orderBook.bids[index].quantity)
+          Number(this.orderBook.bids[index].quantity),
         );
         if (order.quantity <= matched.quantity) {
           matched.quantity -= order.quantity;
@@ -93,7 +98,6 @@ export class Engine {
         tradeMetaData,
       };
     }
-
     if (order.side === "asks") {
       const validOrders = this.orderBook.bids
         .filter((o) => o.price >= order.price)
@@ -101,7 +105,7 @@ export class Engine {
 
       const availableQuantity = validOrders.reduce(
         (acc, curr) => acc + curr.quantity,
-        0
+        0,
       );
 
       if (availableQuantity === 0) {
@@ -122,7 +126,7 @@ export class Engine {
         if (order.quantity === 0) break;
 
         const index = this.orderBook.bids.findIndex(
-          (bid) => bid.price === o.price && bid.quantity === o.quantity
+          (bid) => bid.price === o.price && bid.quantity === o.quantity,
         );
 
         if (index === -1) continue;
@@ -144,7 +148,7 @@ export class Engine {
         });
         console.log(
           order.quantity,
-          Number(this.orderBook.bids[index].quantity)
+          Number(this.orderBook.bids[index].quantity),
         );
 
         if (order.quantity <= matched.quantity) {
@@ -186,7 +190,7 @@ export class Engine {
       if (tradeMetaData) {
         await RedisManager.getInstance().publishToChannel(
           "trades",
-          JSON.stringify(tradeMetaData)
+          JSON.stringify(tradeMetaData),
         );
         for (const metadata of tradeMetaData)
           RedisManager.getInstance().queue("trades", JSON.stringify(metadata));
@@ -207,33 +211,38 @@ export class Engine {
       this.orderBook.asks
         .sort((a: Order, b: Order) => a.price - b.price)
         .slice(0, 20)
-        .reduce((acc, order) => {
-          if (!acc[order.price]) {
-            acc[order.price] = { price: order.price, quantity: 0 };
-          }
-          acc[order.price].quantity += order.quantity;
-          return acc;
-        }, {} as Record<number, { price: number; quantity: number }>)
+        .reduce(
+          (acc, order) => {
+            if (!acc[order.price]) {
+              acc[order.price] = { price: order.price, quantity: 0 };
+            }
+            acc[order.price].quantity += order.quantity;
+            return acc;
+          },
+          {} as Record<number, { price: number; quantity: number }>,
+        ),
     ).slice(0, 20);
     const pubSubMessageBids = Object.values(
       this.orderBook.bids
         .sort((a: Order, b: Order) => b.price - a.price)
         .slice(0, 20)
-        .reduce((acc, order) => {
-          if (!acc[order.price]) {
-            acc[order.price] = { price: order.price, quantity: 0 };
-          }
-          acc[order.price].quantity += order.quantity;
-          return acc;
-        }, {} as Record<number, { price: number; quantity: number }>)
+        .reduce(
+          (acc, order) => {
+            if (!acc[order.price]) {
+              acc[order.price] = { price: order.price, quantity: 0 };
+            }
+            acc[order.price].quantity += order.quantity;
+            return acc;
+          },
+          {} as Record<number, { price: number; quantity: number }>,
+        ),
     ).slice(0, 20);
     await RedisManager.getInstance().publishToChannel(
       channel,
-      JSON.stringify({ asks: pubSubMessageAsks, bids: pubSubMessageBids })
+      JSON.stringify({ asks: pubSubMessageAsks, bids: pubSubMessageBids }),
     );
   }
   public async process(order: Order) {
-    console.log("Processing : ", order);
     if (order.type == "market") {
       return await this.lookUpOrderBook(order);
     } else {

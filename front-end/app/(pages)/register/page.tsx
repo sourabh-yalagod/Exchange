@@ -20,7 +20,7 @@ export default function LoginPage() {
       setLoading(true);
       const { data: response } = await axiosInstance.post(
         "/api/user/auth/register",
-        data
+        data,
       );
       if (response.success) {
         router.push(`/signin`);

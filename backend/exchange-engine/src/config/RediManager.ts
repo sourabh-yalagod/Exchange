@@ -29,10 +29,7 @@ export class RedisManager {
     }
   }
   public async queue(queueName: string, payload: string) {
-    console.log("before");
-
     await this.redisQueue?.lpush(queueName, payload);
-    console.log("after");
   }
   async publishToChannel(channel: string, message: string) {
     try {
@@ -40,7 +37,7 @@ export class RedisManager {
     } catch (error) {
       throw new ApiError(
         401,
-        `Error from ENGINE while PUblishing to Channel : ${channel}`
+        `Error from ENGINE while PUblishing to Channel : ${channel}`,
       );
     }
   }

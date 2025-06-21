@@ -3,6 +3,7 @@ import Image from "next/image";
 import React from "react";
 import NavigationBar from "./NavigationBar";
 import { ModeToggle } from "../theme/ModeToggler";
+import { SideBar } from "../bars/SideBar";
 
 const Header = () => {
   return (
@@ -17,18 +18,17 @@ const Header = () => {
         />
         <NavigationBar />
       </div>
-      <div className="flex gap-4 items-center justify-between">
-        <Search
-          className="hover:scale-105 hover:transition-all font-bold"
-          color="yellow"
-        />
-        <div className="px-1 cursor-pointer rounded-sm font-mono flex gap-2 items-center py-2 dark:dark-component-bg font-bold uppercase bg-yellow-400">
-          <Download />
+      <div className="hidden gap-4 sm:flex items-center justify-between">
+        <Search className="hover:scale-105 hover:transition-all font-bold" />
+        <div className="p-1 text-[9px] sm:text-[12px] md:text-[14px] lg:text-[15px] font-semibold cursor-pointer rounded-sm font-mono flex gap-2 items-center dark:dark-component-bg uppercase bg-yellow-400">
+          <Download size={16} />
           Deposite
         </div>
-        <UserCheck2 className="p-2 size-10 rounded-full text-slate-100 cursor-pointer" />
-        <Menu className="md:hidden" />
+        <UserCheck2 className="p-2 size-10 rounded-full dark:text-slate-100 cursor-pointer" />
         <ModeToggle />
+      </div>
+      <div className="sm:hidden">
+        <SideBar />
       </div>
     </div>
   );

@@ -41,7 +41,7 @@ const Chart = ({ asset }: any) => {
     candleSeriesRef.current = candleSeries;
 
     fetch(
-      `https://api.binance.com/api/v3/klines?symbol=${asset}&interval=1d&limit=360`
+      `https://api.binance.com/api/v3/klines?symbol=${asset}&interval=1d&limit=360`,
     )
       .then((res) => res.json())
       .then((data) => {
@@ -57,7 +57,7 @@ const Chart = ({ asset }: any) => {
         candleSeries.setData(formattedData);
       });
     const socket = new WebSocket(
-      `wss://stream.binance.com:9443/ws/${asset.toLowerCase()}@kline_1m`
+      `wss://stream.binance.com:9443/ws/${asset.toLowerCase()}@kline_1m`,
     );
 
     socket.onmessage = (event) => {

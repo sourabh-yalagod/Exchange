@@ -16,8 +16,9 @@ export class WebSockerManager {
       console.log("Event ", { event, subscribe });
       if (this.subscriptionSockets.has(subscribe)) {
         const subscriptionSockets = this.subscriptionSockets.get(subscribe);
-        subscriptionSockets?.push(ws);
-        this.subscriptionSockets.set(subscribe, subscriptionSockets || []);
+        if (subscriptionSockets && !subscriptionSockets.includes(ws)) {
+          subscriptionSockets.push(ws);
+        }
       } else {
         this.subscriptionSockets.set(subscribe, [ws]);
       }
@@ -25,25 +26,26 @@ export class WebSockerManager {
         case "SUBSCRIBE":
           RedisManger.getInstace().PubSubMessages(
             subscribe,
-            this.subscriptionSockets.get(subscribe) || []
+            this.subscriptionSockets.get(subscribe) || [],
           );
           break;
       }
     });
     ws.on("close", (ws: WebSocket) => {
       const topic = "BTCUSDT";
-      const remainingSockets = this.subscriptionSockets
-        .get(topic)
-        ?.filter((socket) => socket != ws);
-
-      console.log("remainingSockets:", remainingSockets?.length);
-
-      if (!remainingSockets?.length) {
-        RedisManger.getInstace().unSubscribeChannel(topic);
+      const sockets = this.subscriptionSockets.get(topic);
+      if (sockets) {
+        const remainingSockets = sockets.filter((socket) => socket !== ws);
+        this.subscriptionSockets.set(topic, remainingSockets);
+        console.log("Remaining sockets:", remainingSockets.length);
+        
+        console.log("Connection closed");
+        console.log(this.subscriptionSockets);
+        
+        if (!remainingSockets?.length) {
+          RedisManger.getInstace().unSubscribeChannel(topic);
+        }
       }
-
-      this.subscriptionSockets.set(topic, remainingSockets || []);
-      console.log("connection Closed");
     });
   }
 }

@@ -1,10 +1,8 @@
-import mongoose from "mongoose";
+import { OrderBook } from "../model/orderBook";
 import { Trade } from "../model/trade";
 import { User } from "../model/user";
 
 export const recordDepositeRecord = async (payload: any) => {
-  console.log("Payload : ", payload);
-
   const user = await User.findById(payload.userId);
   const depositeHistory: any[] = user?.depositHistory;
   depositeHistory.push({ ...payload, createdAt: new Date() });
@@ -21,8 +19,6 @@ export const recordTrade = async (payload: any) => {
 export const handleTransaction = async (payload: any) => {
   const buyer = await Trade.findOne({ orderId: payload.buyerOrderId });
   const seller = await Trade.findOne({ orderId: payload.sellerOrderId });
-  console.log("Payload : ", payload);
-
   if (!seller) {
     console.log("no seller");
     return;
@@ -46,6 +42,17 @@ export const handleTransaction = async (payload: any) => {
 
   await buyer.save();
   await seller.save();
-  console.log("Buyer", buyer);
-  console.log("Seller", seller);
 };
+export const handleOrderBookSnapShot=async(payload:any)=>{
+  const asset = payload.bids[0]?.asset??payload.asks[0]?.asset
+  let isOrderBookexist = await OrderBook.findOne({asset:asset})
+  if(!isOrderBookexist){
+    isOrderBookexist = await OrderBook.create({asset,bids:payload.bids,asks:payload.asks})   
+  }else{
+    isOrderBookexist.bids=payload.bids
+    isOrderBookexist.asks=payload.asks
+    await isOrderBookexist.save()
+  }
+  console.log("isOrderBookexist",isOrderBookexist)
+  
+}

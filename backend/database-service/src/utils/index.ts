@@ -6,7 +6,7 @@ const hashPassword = async (password: string): Promise<string> => {
 
 const verifyPassword = async (
   databasePassword: string,
-  inputPassword: string
+  inputPassword: string,
 ): Promise<Boolean> => {
   return bcrypt.compare(inputPassword, databasePassword);
 };

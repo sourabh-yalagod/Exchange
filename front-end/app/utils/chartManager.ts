@@ -25,7 +25,7 @@ export class ChartManager {
   constructor(
     ref: any,
     initialData: any[],
-    layout: { background: string; color: string }
+    layout: { background: string; color: string },
   ) {
     const chart = createLightWeightChart(ref, {
       autoSize: true,
@@ -64,7 +64,7 @@ export class ChartManager {
       initialData.map((data) => ({
         ...data,
         time: (data.timestamp / 1000) as UTCTimestamp,
-      }))
+      })),
     );
   }
   public update(updatedPrice: any) {

@@ -20,10 +20,10 @@ const HomePage = () => {
     const fetchAssets = async () => {
       try {
         const response = await axios.get(
-          "https://api.binance.com/api/v3/ticker/24hr"
+          "https://api.binance.com/api/v3/ticker/24hr",
         );
         const usdtAssets = response.data.filter((asset: any) =>
-          asset.symbol.endsWith("USDT")
+          asset.symbol.endsWith("USDT"),
         );
         setAssets(usdtAssets.slice(0, 150));
       } catch (err) {

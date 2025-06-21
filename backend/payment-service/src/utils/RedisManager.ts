@@ -24,11 +24,18 @@ export class RedisManger {
       throw new ApiError("order is pused to Redis Queue " + error, 501);
     }
   }
-  async manageCache(key: string, value: string) {
+  async setCache(key: string, value: string) {
     try {
       await this.redisCache?.set(key, value);
     } catch (error) {
       throw new ApiError("order is pused to Redis Queue " + error, 501);
+    }
+  }
+  async getCache(key: string) {
+    try {
+      return await this.redisCache?.get(key);
+    } catch (error) {
+      throw new ApiError("redis cache fetched " + error, 501);
     }
   }
 }

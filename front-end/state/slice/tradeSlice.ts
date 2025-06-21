@@ -55,7 +55,7 @@ export const handleCloseTrade = createAsyncThunk<
     const { queryClient } = thunkAPI.extra;
     const { data } = await axiosInstance.post(
       `/api/database/order/close/${payload.orderId}`,
-      payload
+      payload,
     );
     console.log("close order", data);
 
@@ -75,7 +75,7 @@ export const tradeReducer = createSlice({
     closeTrade: (state: any, action) => {
       const { tradeId } = action.payload;
       state.trades = state.trades.filter(
-        (trade: any) => trade.orderId != tradeId
+        (trade: any) => trade.orderId != tradeId,
       );
     },
   },

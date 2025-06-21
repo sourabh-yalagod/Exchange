@@ -31,6 +31,8 @@ const register = asyncHandler(async (req: Request, res: Response) => {
 const login = asyncHandler(async (req: Request, res: Response) => {
   try {
     const { success, data, error } = zodLoginSchema.safeParse(req.body);
+    console.log({data});
+    
     if (!success) {
       throw new ApiError(error.message, 401);
     }
@@ -42,7 +44,7 @@ const login = asyncHandler(async (req: Request, res: Response) => {
     }
     const isPasswordValid = await verifyPassword(
       checkUser.password,
-      data.password
+      data.password,
     );
     if (!isPasswordValid) {
       throw new ApiError(`Password is invalid....!`, 401);
@@ -59,10 +61,8 @@ const login = asyncHandler(async (req: Request, res: Response) => {
         locked: checkUser?.locked || 0,
         username: checkUser.username,
         email: checkUser.email,
-      })
+      }),
     );
-
-    console.log("S : ", s);
 
     res
       .status(202)

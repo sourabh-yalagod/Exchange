@@ -20,7 +20,7 @@ app.post("/", async (req: Request, res: Response) => {
   res.json(
     new ApiResponse(response.success ? 201 : 401, response?.message, {
       orderFilled: response?.filledOrder,
-    })
+    }),
   );
   return;
 });
@@ -29,7 +29,7 @@ async function orderQueue() {
   while (true) {
     const [key, payload]: [string, string] | any = await redis.brpop(
       "order-queue",
-      0
+      0,
     );
     if (key && payload) {
       Engine.getInstance().process(JSON.parse(payload));

@@ -14,7 +14,7 @@ export const handleAuth = (req: any, res: Response, next: NextFunction) => {
       rawCookie.split("; ").map((cookie: string) => {
         const [name, value] = cookie.split("=");
         return [name, value];
-      })
+      }),
     );
 
     const token = cookies["token"];

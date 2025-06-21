@@ -18,7 +18,7 @@ const tradeSchema = new mongoose.Schema(
     side: String,
     type: String,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Trade =

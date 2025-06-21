@@ -18,5 +18,5 @@ export class MongoManager {
     } catch (error) {
       throw new ApiError("MongoDb Connection Failed....!", 501);
     }
-  }
+  } 
 }

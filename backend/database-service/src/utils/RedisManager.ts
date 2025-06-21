@@ -1,6 +1,7 @@
 import Redis from "ioredis";
 import { User } from "../model/user";
 import {
+  handleOrderBookSnapShot,
   handleTransaction,
   recordDepositeRecord,
   recordTrade,
@@ -26,10 +27,9 @@ export class RedisManager {
     }
     while (true) {
       const [key, data]: [string, string] | any = await this.redisClient.brpop(
-        ["database", "trades", "order"],
-        0
+        ["database", "trades", "order","orderBook"],
+        0,
       );
-      console.log(data);
 
       if (key == "database") {
         const value = JSON.parse(data);
@@ -63,6 +63,9 @@ export class RedisManager {
         } catch (error) {
           console.log(error);
         }
+      }
+      if(key=='orderBook'){
+        await handleOrderBookSnapShot(JSON.parse(data))
       }
     }
   }

@@ -5,7 +5,7 @@ import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 
 const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_PUBLISHABLE_KEY?.toString() || ""
+  process.env.NEXT_PUBLIC_PUBLISHABLE_KEY?.toString() || "",
 );
 const Page = () => {
   return (

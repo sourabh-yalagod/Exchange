@@ -15,16 +15,16 @@ app.use(
   cors({
     origin: "http://localhost:3000",
     credentials: true, //
-  })
+  }),
 );
 app.use(express.json());
 app.get("/testing", async (req: any, res) => {
   const payload = await RedisManger.getInstace().getCache(req.userId);
-  res.json(payload);
+  res.json({payload});
 });
 app.post("/api/order", handleAuth, async (req: any, res) => {
-  const { price, quantity, userId, asset, side, type } = req.body;
-  if (!price || !quantity || !asset || !side || !type) {
+  const { price, quantity, userId, asset, side, type,margin } = req.body;
+  if (!price || !quantity || !asset || !side || !type||!margin) {
     throw new ApiError(401, "All fields are required....!");
   }
   const orderId = randomUUID();
@@ -35,19 +35,31 @@ app.post("/api/order", handleAuth, async (req: any, res) => {
     asset,
     side,
     orderId,
-    type,
+    type,margin
   };
-  const userMetaData = await RedisManger.getInstace().getCache(req.userId);
-  console.log("userMetaData : ", userMetaData);
-  res.send(userMetaData);
-  return;
+  const userMetaDataRaw = await RedisManger.getInstace().getCache(req.userId);
+  console.log(userMetaDataRaw);
+  
+  const userMetaData = JSON.parse(userMetaDataRaw as string)
+  if(userMetaData?.balance<margin){
+    if(userMetaData.balance==0){
+      throw new ApiError(`You have Rs0 balance left with....!`)
+    }
+    throw new ApiError(`You need Rs.${margin-userMetaData.balance} to execute order....!`)
+  }
+  if(!userMetaData){
+    throw new ApiError(`User Meta data not Found Please signin once again...!`)
+  }
   if (type == "market") {
     try {
       const { data } = await axios.post(
         `${process.env.EXCHANGE_ENGINE_BASE_URL!}`,
-        order
+        order,
       );
       if (data.success) {
+        await RedisManger.getInstace().setCache(req.userId,JSON.stringify(
+        {...userMetaData,balance:Number(userMetaData.balance)-Number(margin)
+        }));
         res.json(new ApiResponse(201, data.message, data.filledOrder));
       } else {
         throw new ApiError(data.message, 4, 1);
@@ -62,14 +74,15 @@ app.post("/api/order", handleAuth, async (req: any, res) => {
     try {
       await RedisManger.getInstace().queue(
         `order-queue`,
-        JSON.stringify(order)
+        JSON.stringify(order),
       );
+      await RedisManger.getInstace().setCache(req.userId,JSON.stringify({...userMetaData,balance:Number(userMetaData.balance)-Number(margin),locked:userMetaData?.locked+Number(margin)}));
       res.json(
         new ApiResponse(
           201,
           `${order.quantity} quantity placed for price ${order.price}. Please confirm the orderBook`,
-          {}
-        )
+          {},
+        ),
       );
     } catch (error) {
       throw new ApiError("order placed gone wrong" + error, 501);
@@ -80,16 +93,18 @@ app.post("/api/order", handleAuth, async (req: any, res) => {
 app.use(
   "/api/database",
   handleAuth,
-  handleProxy(process.env.EXCHANGE_DATABASE_BASE_URL as string)
+  handleProxy(process.env.EXCHANGE_DATABASE_BASE_URL as string),
 );
 app.use(
   "/api/user",
-  handleProxy(process.env.EXCHANGE_DATABASE_BASE_URL as string)
+  handleProxy(process.env.EXCHANGE_DATABASE_BASE_URL as string),
 );
+console.log(process.env.EXCHANGE_DATABASE_BASE_URL);
+
 app.use(
   "/api/payment",
   handleAuth,
-  handleProxy(process.env.EXCHANGE_PAYMENT_BASE_URL as string)
+  handleProxy(process.env.EXCHANGE_PAYMENT_BASE_URL as string),
 );
 
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {

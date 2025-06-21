@@ -33,7 +33,7 @@ const OrderForm = ({
       margin: Number(
         orderType === "limit"
           ? ((Number(price) * Number(quantity)) / leverage).toFixed(2)
-          : ((marketPrice * Number(quantity)) / leverage).toFixed(2)
+          : ((marketPrice * Number(quantity)) / leverage).toFixed(2),
       ),
       quantity: Number(Number(quantity).toFixed(2)),
       leverage,
@@ -80,7 +80,7 @@ const OrderForm = ({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-4 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 space-y-6 text-sm sm:text-xs">
+    <div className="w-full max-w-md mx-auto p-4 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 space-y-3 text-sm sm:text-xs">
       <h1 className="font-bold text-2xl text-center text-gray-800 dark:text-gray-100">
         Place Panel
       </h1>

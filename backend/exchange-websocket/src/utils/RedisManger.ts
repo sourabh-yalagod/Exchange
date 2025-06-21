@@ -28,7 +28,7 @@ export class RedisManger {
       this.subscriptionSet.delete(channel);
       throw new ApiError(
         401,
-        `PubSub Channel Subscription Error [${channel}] : ERORR-> ` + error
+        `PubSub Channel Subscription Error [${channel}] : ERORR-> ` + error,
       );
     }
   }
@@ -38,8 +38,7 @@ export class RedisManger {
       const handler = (chan: string, message: string) => {
         if (chan === channel) {
           sockets?.forEach((socket) => {
-            console.log("Socket Payload");
-
+            console.log("Socket Payload",message);
             socket.send(message);
           });
         }
@@ -55,7 +54,7 @@ export class RedisManger {
     } catch (error) {
       throw new ApiError(
         401,
-        `PubSub Channel UnSubscribe Error [${channel}] : ERORR-> ` + error
+        `PubSub Channel UnSubscribe Error [${channel}] : ERORR-> ` + error,
       );
     }
   }

@@ -4,6 +4,7 @@ import Chart from "@/components/Chart";
 import OrderBook from "@/components/OrderBook";
 import OrderForm from "@/components/OrderForm";
 import TradeTab from "@/components/TradeTab";
+import { axiosInstance } from "@/lib/axiosInstance";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -23,7 +24,7 @@ const Trade = () => {
     const socket = new WebSocket(
       `wss://stream.binance.com:9443/ws/${asset
         ?.toString()
-        .toLowerCase()}@ticker`
+        .toLowerCase()}@ticker`,
     );
     const socket2 = new WebSocket(process.env.NEXT_PUBLIC_WEBSOCKET_URL!);
     socket2.onopen = () => {
@@ -32,7 +33,7 @@ const Trade = () => {
         JSON.stringify({
           event: "SUBSCRIBE",
           subscribe: String(asset),
-        })
+        }),
       );
       socket2.onclose = () => {
         console.log("socket connection closed..!");
@@ -56,6 +57,9 @@ const Trade = () => {
         });
       };
     };
+    axiosInstance.get(`/api/database/orderBook/${asset}`).then((res)=>{
+      setOrderBook(res?.data?.data ?? [])
+    })
     return () => {
       socket.close();
     };
@@ -86,9 +90,7 @@ const Trade = () => {
       {/* Footer - fixed height */}
       <div className="py-2 px-2">
         <div className="w-full overflow-scroll h-[150px]">
-          <TradeTab
-            currentPrice={Number(ticker?.currentPrice || "0")}
-          />
+          <TradeTab currentPrice={Number(ticker?.currentPrice || "0")} />
         </div>
       </div>
     </div>
