@@ -6,23 +6,40 @@ const getOrderBook=asyncHandler(async(req:Request,res:Response)=>{
     const {asset}=req.params
     console.log(asset);
     
-    const orderBook = await OrderBook.findOne({asset});
-    
-    const sortedAsks = [...orderBook?.asks]?.sort((a:any, b:any) => a.price - b.price);
-    const sortedBids = [...orderBook?.bids]?.sort((a:any, b:any) => b.price - a.price);
-    
-    const calculateCumulative = (orders: any) => {
-        let total = 0;
-        return orders.map((order:any) => {
-            total += order.quantity;
-            return { price:order.price,quantity:order.quantity, cumulative: total };
-        });
-    };
-    
-    const asksWithCumulative = calculateCumulative(sortedAsks);
-    const bidsWithCumulative = calculateCumulative(sortedBids);
-    console.log({asks:asksWithCumulative,bids:bidsWithCumulative});
-    res.json(new ApiResponse(201,`${asset} orderbook fetched sucessfully.`,{asks:asksWithCumulative,bids:bidsWithCumulative}))
+    const orderBookRaw = await OrderBook.findOne({asset});
+    let orderBook = {bids:[],asks:[]}
+    orderBook.bids = Object.values(
+    orderBookRaw?.bids
+        ?.sort((a: any, b: any) => b.price - a.price)
+        .slice(0, 20)
+        .reduce(
+        (acc: Record<number, { price: number; quantity: number }>, order: any) => {
+            if (!acc[order.price]) {
+            acc[order.price] = { price: order.price, quantity: 0 };
+            }
+            acc[order.price].quantity += order.quantity;
+            return acc;
+        },
+        {}
+        )
+    );
+
+    orderBook.asks = Object.values(
+    orderBookRaw?.asks
+        ?.sort((a: any, b: any) => a.price - b.price)
+        .slice(0, 20)
+        .reduce(
+        (acc: Record<number, { price: number; quantity: number }>, order: any) => {
+            if (!acc[order.price]) {
+            acc[order.price] = { price: order.price, quantity: 0 };
+            }
+            acc[order.price].quantity += order.quantity;
+            return acc;
+        },
+        {}
+        )
+    )
+    res.json(new ApiResponse(201,`${asset} orderbook fetched sucessfully.`,orderBook))
     return
 })
 export {getOrderBook}

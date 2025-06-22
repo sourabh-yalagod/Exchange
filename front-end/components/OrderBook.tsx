@@ -5,7 +5,7 @@ interface Order {
   asset: string;
 }
 const OrderBook = ({ orderBook }: any) => {
-  if (!orderBook) {
+  if (!orderBook?.asks || !orderBook?.bids) {
     return (
       <div className="w-full min-h-96 relative h-full border flex flex-col justify-center max-w-md mx-auto text-sm font-mono">
         <div className="absolute top-0 h-10 py-1 inset-x-0">

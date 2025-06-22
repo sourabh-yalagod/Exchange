@@ -35,17 +35,17 @@ export class RedisManger {
   public async PubSubMessages(channel: string, sockets: WebSocket[]) {
     await this.subscibeChannel(channel);
     if (!this.listenersMap.has(channel)) {
-      const handler = (chan: string, message: string) => {
-        if (chan === channel) {
+
+      this.subscriber?.on("message", (cha, data) => {
+        console.log("Websocket Data : ",data);
+        
+        if (cha === channel) {
           sockets?.forEach((socket) => {
-            console.log("Socket Payload",message);
-            socket.send(message);
+            console.log("Socket Payload",data);
+            socket.send(data);
           });
         }
-      };
-
-      this.subscriber?.on("message", (channel, data) => handler(channel, data));
-      this.listenersMap.set(channel, () => handler);
+      });
     }
   }
   public async unSubscribeChannel(channel: string) {

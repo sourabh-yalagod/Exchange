@@ -14,14 +14,6 @@ export class WebSockerManager {
     ws.on("message", (data) => {
       const { event, subscribe } = JSON.parse(data.toString());
       console.log("Event ", { event, subscribe });
-      if (this.subscriptionSockets.has(subscribe)) {
-        const subscriptionSockets = this.subscriptionSockets.get(subscribe);
-        if (subscriptionSockets && !subscriptionSockets.includes(ws)) {
-          subscriptionSockets.push(ws);
-        }
-      } else {
-        this.subscriptionSockets.set(subscribe, [ws]);
-      }
       switch (event) {
         case "SUBSCRIBE":
           RedisManger.getInstace().PubSubMessages(
@@ -30,22 +22,41 @@ export class WebSockerManager {
           );
           break;
       }
+      if(this.subscriptionSockets.get(subscribe)){
+        const existingSocket = this.subscriptionSockets.get(subscribe)
+        if(!existingSocket?.includes(ws)){
+          existingSocket?.push(ws)
+          console.log('ExistingSocket',existingSocket?.length);
+        }else{
+          console.log('socket exist');
+          console.log('ExistingSocket',existingSocket?.length);
+        }
+        this.subscriptionSockets.set(subscribe,existingSocket as WebSocket[])
+      }else{
+        console.log('First socket');
+        this.subscriptionSockets.set(subscribe,[ws])
+      }
     });
-    ws.on("close", (ws: WebSocket) => {
+    ws.on("close", (ws: number) => {
       const topic = "BTCUSDT";
       const sockets = this.subscriptionSockets.get(topic);
+
+      console.log("Before Length : ", sockets?.length);
+
       if (sockets) {
-        const remainingSockets = sockets.filter((socket) => socket !== ws);
+        const remainingSockets = sockets.filter((socket:any) => socket?._closeCode!=ws);
+
+        // Update the map
         this.subscriptionSockets.set(topic, remainingSockets);
-        console.log("Remaining sockets:", remainingSockets.length);
-        
-        console.log("Connection closed");
-        console.log(this.subscriptionSockets);
-        
-        if (!remainingSockets?.length) {
+
+        // Corrected logs
+        console.log("After Length : ", remainingSockets.length);
+
+        if (remainingSockets.length === 0) {
           RedisManger.getInstace().unSubscribeChannel(topic);
         }
       }
     });
+
   }
 }

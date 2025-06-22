@@ -58,7 +58,9 @@ const Trade = () => {
       };
     };
     axiosInstance.get(`/api/database/orderBook/${asset}`).then((res)=>{
-      setOrderBook(res?.data?.data ?? [])
+      console.log("Order Book : ",res?.data?.data);
+      setOrderBook(()=>res?.data?.data ?? {asks:[],bids:[]})
+      
     })
     return () => {
       socket.close();
