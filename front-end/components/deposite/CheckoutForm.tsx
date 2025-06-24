@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Elements,
   CardElement,
@@ -11,6 +11,7 @@ import { ArrowRight, Banknote, IndianRupee, MonitorCheck } from "lucide-react";
 import { loadRazorpay } from "@/lib/razorPayLoader";
 import { toast } from "sonner";
 import { axiosInstance } from "@/lib/axiosInstance";
+import { useRouter } from "next/navigation";
 
 const CheckoutForm = () => {
   const userId = "1";
@@ -21,11 +22,10 @@ const CheckoutForm = () => {
   const [amount, setAmount] = useState<any>(0.0);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-
+  const router = useRouter()
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
-
     const { data } = await axiosInstance.post(`/api/payment/create-intent`, {
       amount,
       currency: "INR",
@@ -108,6 +108,7 @@ const CheckoutForm = () => {
         toast.error(error.message || "Something went wrong");
       } finally {
         setLoading(false);
+        router.push('/')
       }
     }
   };

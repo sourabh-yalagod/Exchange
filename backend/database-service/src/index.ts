@@ -2,7 +2,8 @@ import express, { NextFunction, Request, Response } from "express";
 const app = express();
 app.use(express.json());
 
-import authRouter from "./router/userRouter";
+import authRouter from "./router/authRouter";
+import userRouter from "./router/userRouter";
 import userTrades from "./router/tradeRouter";
 import orderBookRouter from "./router/orderBookRouter";
 import { MongoManager } from "./database/mongoDB";
@@ -13,6 +14,7 @@ MongoManager.getInstance().mongoDb();
 RedisManager.getInstance().listenToQueue();
 
 app.use("/auth", authRouter);
+app.use("/", userRouter);
 app.use("/order", userTrades);
 app.use('/orderBook',orderBookRouter)
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {

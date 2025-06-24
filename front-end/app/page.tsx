@@ -11,11 +11,12 @@ import InfiniteScroller from "@/components/home/InfiniteScoll";
 import Demo from "@/components/home/Demo";
 import QnA from "@/components/home/QnA";
 import Footer from "@/components/home/Footer";
+import { axiosInstance } from "@/lib/axiosInstance";
 const HomePage = () => {
   const [assets, setAssets] = useState([]);
   const [showBalance, setShowBalance] = useState(false);
   const [balance, setBalance] = useState(122);
-  const navigate = useRouter();
+  const router = useRouter();
   useEffect(() => {
     const fetchAssets = async () => {
       try {
@@ -30,9 +31,10 @@ const HomePage = () => {
         console.error("Failed to fetch assets", err);
       }
     };
-
     fetchAssets();
   }, []);
+
+  
 
   return (
     <div className="dark:dark-bg min-h-screen">

@@ -99,7 +99,6 @@ app.use(
   "/api/user",
   handleProxy(process.env.EXCHANGE_DATABASE_BASE_URL as string),
 );
-console.log(process.env.EXCHANGE_DATABASE_BASE_URL);
 
 app.use(
   "/api/payment",
